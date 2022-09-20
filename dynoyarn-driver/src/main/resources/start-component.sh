@@ -26,7 +26,7 @@ baseDir="`pwd`/dyno-node"
 logDir=$LOG_DIR
 
 pidDir="$baseDir/pid"
-baseHttpPort=$DYARN_RM_HTTP_PORT
+baseHttpPort=$DYARN_RM_HTTP_PORT # can we hardcode this?
 baseSchedulerPort=$DYARN_RM_SCHEDULER_PORT
 baseServiceRpcPort=$DYARN_RM_PORT
 baseAdminPort=$DYARN_RM_ADMIN_PORT
@@ -63,8 +63,9 @@ cp *.jar $extraClasspathDir
 
 # This is where libleveldbjni is written (per-NM). Write it to a larger partition
 # instead of /tmp
-tmpdir="/grid/a/tmp/hadoop-`whoami`"
-mkdir $tmpdir
+# tmpdir="/grid/a/tmp/hadoop-`whoami`"
+tmpdir="/tmp"   # just use normal /tmp so that the simulated RM UI can find the path
+mkdir $tmpdir # maybe `mkdir -p $tmpdir`
 
 # Change environment variables for the Hadoop process
 export HADOOP_HOME="$hadoopHome"
@@ -81,7 +82,11 @@ export YARN_LOG_DIR=${logDir}
 export HADOOP_PID_DIR=${pidDir}
 export HADOOP_CLASSPATH="$extraClasspathDir/*"
 export YARN_OPTS="-Djava.io.tmpdir=$tmpdir"
-export HADOOP_CLIENT_OPTS="$HADOOP_CLIENT_OPTS $JAVA_HEAP_MAX -XX:ParallelGCThreads=2 -XX:CICompilerCount=2"
+export JMX_OPTS="-Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.port=20004" #choose port 20005 instead?
+export HADOOP_CLIENT_OPTS="$HADOOP_CLIENT_OPTS $JAVA_HEAP_MAX -XX:ParallelGCThreads=2 -XX:CICompilerCount=2" # TODO add JMX opts
+
+echo 'HADOOP_CLIENT_OPTS'
+echo $HADOOP_CLIENT_OPTS
 
 export HADOOP_PREFIX="$hadoopHome"
 unset YARN_CONF_DIR

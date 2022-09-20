@@ -236,6 +236,7 @@ public class Utils {
    * @return {@link org.apache.hadoop.yarn.client.api.AMRMClient.ContainerRequest} object
    */
   public static AMRMClient.ContainerRequest setupContainerRequest(ContainerRequest request) {
+    LOG.info("=== setupContainerRequests");
     Resource capability = Resource.newInstance((int) request.getMemory(), request.getVcores());
     AMRMClient.ContainerRequest containerRequest = AMRMClient.ContainerRequest.newBuilder()
         .capability(capability)
@@ -252,8 +253,10 @@ public class Utils {
    * @param request {@link com.linkedin.dynoyarn.common.ContaineRequest} object.
    */
   public static void scheduleTask(AMRMClientAsync amRMClient, ContainerRequest request) {
+    LOG.info("=== scheduleTask "); 
     AMRMClient.ContainerRequest containerAsk = setupContainerRequest(request);
     for (int i = 0; i < request.getNumInstances(); i++) {
+      LOG.info("=== containerAsk " + containerAsk.toString());
       amRMClient.addContainerRequest(containerAsk);
     }
   }
@@ -272,6 +275,7 @@ public class Utils {
       throws IOException, URISyntaxException, YarnException {
     Credentials cred = new Credentials();
     String fileLocation = System.getenv(UserGroupInformation.HADOOP_TOKEN_FILE_LOCATION);
+    LOG.info("=== HADOOP_TOKEN_FILE_LOCATION" + fileLocation);
     if (fileLocation != null) {
       cred = Credentials.readTokenStorageFile(new File(fileLocation), conf);
     } else {
@@ -361,7 +365,9 @@ public class Utils {
    * @return HDFS path used for this application's resources
    */
   public static Path constructAppResourcesPath(FileSystem fs, String appId) {
-    return new Path(fs.getHomeDirectory(), Constants.DYARN_FOLDER + Path.SEPARATOR + appId);
+    return new Path("/tmp/", Constants.DYARN_FOLDER + Path.SEPARATOR + appId); // store at /tmp/* instead of /user/$USER/* 
+
+    // return new Path(fs.getHomeDirectory(), Constants.DYARN_FOLDER + Path.SEPARATOR + appId);
   }
 
   /**

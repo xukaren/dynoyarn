@@ -103,6 +103,7 @@ public class SimulatedApplicationMaster {
   }
 
   public boolean init(String[] args) throws IOException {
+    LOG.info("=== SimulatedApplicationMaster");
     Options opts = new Options();
     opts.addOption("cluster_spec_location", true, "Path on HDFS to cluster spec information.");
 
@@ -143,6 +144,7 @@ public class SimulatedApplicationMaster {
   }
 
   private void parseAppSpec() {
+    LOG.info("=== parseAppSpec");
     for (ResourceRequestSpec spec : appSpec.getResourceRequestSpecs()) {
       priorityToSpecMap.put(spec.getPriority(), spec);
       List<Long> runtimes = new ArrayList<>();
@@ -204,6 +206,7 @@ public class SimulatedApplicationMaster {
 
   // Set up credentials for the containers.
   private void setupContainerCredentials(UserGroupInformation ugi) throws Exception {
+    LOG.info("=== setupContainerCredentials");
     Credentials creds = ugi.getCredentials();
     Iterator<Token<?>> iter = creds.getAllTokens().iterator();
     // Remove AMRMToken so tasks don't have it
@@ -219,6 +222,8 @@ public class SimulatedApplicationMaster {
   }
 
   public static void main(String[] args) throws InterruptedException {
+    LOG.info("=== SimulatedApplicationmaster main()");
+
     boolean result = false;
     try {
       SimulatedApplicationMaster appMaster = new SimulatedApplicationMaster();

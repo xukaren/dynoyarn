@@ -32,7 +32,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FSDataInputStream;
+import org.apache.hadoop.fs.FSDataInputStream; // import 
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -54,7 +54,7 @@ import org.apache.hadoop.yarn.api.records.Resource;
 import org.apache.hadoop.yarn.api.records.UpdatedContainer;
 import org.apache.hadoop.yarn.client.ClientRMProxy;
 import org.apache.hadoop.yarn.client.api.YarnClient;
-import org.apache.hadoop.yarn.client.api.async.AMRMClientAsync;
+import org.apache.hadoop.yarn.client.api.async.AMRMClientAsync; // import
 import org.apache.hadoop.yarn.client.api.async.NMClientAsync;
 import org.apache.hadoop.yarn.client.api.async.impl.NMClientAsyncImpl;
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
@@ -114,6 +114,7 @@ public class DriverApplicationMaster {
   }
 
   public boolean init(String[] args) throws IOException {
+    LOG.info("=== Driver ApplicationMaster init()");
     Options opts = new Options();
     opts.addOption("conf", true, "Path to dynoyarn configuration.");
 
@@ -133,27 +134,43 @@ public class DriverApplicationMaster {
     requestMap = parseContainerRequests(dyarnConf);
     containerIdToComponentMap = new HashMap<>();
     totalNMs = dyarnConf.getInt(DynoYARNConfigurationKeys.NUM_NMS, 1);
+    LOG.info("=== totalNMS: " + totalNMs); 
     nodeManagersPerContainer = dyarnConf.getInt(DynoYARNConfigurationKeys.NMS_PER_CONTAINER, 1);
+    LOG.info("=== nodeManagersPerContainer: " + nodeManagersPerContainer); 
     numTotalNodeManagerContainers = Utils.getNumNMContainerRequests(dyarnConf);
+    LOG.info("=== numTotalNodeManagerContainers: " + numTotalNodeManagerContainers); 
     assignedLeftovers = (totalNMs % nodeManagersPerContainer == 0);
     fs = FileSystem.get(dyarnConf);
     appResourcesPath = Utils.constructAppResourcesPath(fs, Utils.getApplicationId().toString());
     hdfsStoragePath = new Path(appResourcesPath, Constants.HDFS_STORAGE_FILE);
+    LOG.info("=== hdfsStoragePath" + hdfsStoragePath);
     return true;
   }
 
   private boolean prepare() {
     LOG.info("Preparing application master..");
     containerListener = createNMCallbackHandler();
-    nmClientAsync = new NMClientAsyncImpl(containerListener);
+    LOG.info(" === prepare(): finished createNMCallbackHandler()");
+    nmClientAsync = new NMClientAsyncImpl(containerListener); // TODO  error here 
+    LOG.info(" === prepare(): finished NMClientAsyncImpl(containerListener)");
+
     nmClientAsync.init(dyarnConf);
+    LOG.info(" === init'ed nmClientAsync with dyarnConf");
+
     nmClientAsync.start();
+    LOG.info(" === started nmClientAsync");
+
 
     // Init AMRMClient
     AMRMClientAsync.AbstractCallbackHandler allocListener = new RMCallbackHandler();
+    LOG.info("=== created RMCallbackHandler");
+
     amRMClient = AMRMClientAsync.createAMRMClientAsync(1000, allocListener);
+    LOG.info("=== created AMRMClientAsync"); 
     amRMClient.init(dyarnConf);
+    LOG.info("=== init'ed amRMClient");
     amRMClient.start();
+    LOG.info("=== starteded amRMClient");
 
     try {
       String appMasterHostname = NetUtils.getHostname();
@@ -167,9 +184,12 @@ public class DriverApplicationMaster {
   }
 
   public static void main(String[] args) {
+    LOG.info("=== DriverAppmaster main()"); 
     boolean result = false;
     try {
       DriverApplicationMaster appMaster = new DriverApplicationMaster();
+      LOG.info("=== DriverAppmaster main() new appMaster"); 
+
       LOG.info("Initializing ApplicationMaster");
       boolean doRun = appMaster.init(args);
       if (!doRun) {
@@ -178,6 +198,7 @@ public class DriverApplicationMaster {
       if (!appMaster.prepare()) {
         System.exit(-1);
       }
+
       result = appMaster.run();
     } catch (Throwable t) {
       LOG.fatal("Error running ApplicationMaster", t);
@@ -193,6 +214,7 @@ public class DriverApplicationMaster {
   }
 
   public boolean run() throws IOException, InterruptedException {
+    LOG.info("=== DriverAppMaster run()");
     containerResources = getContainerResources();
     scheduleTasks();
     new NodeLabelsUpdater().start();
@@ -209,6 +231,7 @@ public class DriverApplicationMaster {
     } catch (Exception ex) {
       LOG.error("Failed to unregister application", ex);
     }
+    LOG.info("=== about to stop nmClientAsync"); 
     nmClientAsync.stop();
     amRMClient.waitForServiceToStop(5000);
     amRMClient.stop();
@@ -224,6 +247,7 @@ public class DriverApplicationMaster {
     @VisibleForTesting
     void remoteAddLabels(ResourceManagerAdministrationProtocol rmAdminClient, Map<String, Integer> labelToCounts,
         List<NodeReport> nodeReports) throws IOException, YarnException {
+      LOG.info("=== remoteAddLabels "); 
       List<NodeLabel> labels = new ArrayList<>();
       labelToCounts.keySet().forEach(label -> labels.add(NodeLabel.newInstance(label)));
       AddToClusterNodeLabelsRequest addRequest = AddToClusterNodeLabelsRequest.newInstance(labels);
@@ -234,7 +258,7 @@ public class DriverApplicationMaster {
         for (int i = idx; i < labelToCounts.get(label.getName()) + idx; i++) {
           NodeReport nodeReport = nodeReports.get(i);
           nodeToLabelsMapping.put(nodeReport.getNodeId(), Collections.<String>singleton(label.getName()));
-          LOG.debug("Added label " + label + " to node " + nodeReport.getNodeId());
+          LOG.info("Added label " + label + " to node " + nodeReport.getNodeId());
         }
         idx += labelToCounts.get(label.getName());
       }
@@ -244,6 +268,8 @@ public class DriverApplicationMaster {
 
     @Override
     public void run() {
+      LOG.info("=== DriverAppMaster NodeLabelsUpdater run()");
+
       synchronized (DriverApplicationMaster.this) {
         try {
           while (cluster == null) {
@@ -286,6 +312,8 @@ public class DriverApplicationMaster {
   }
 
   private Status monitor() {
+    LOG.info("=== DriverAppMaster monitor()");
+
     if (numCompletedNMContainers.get() == numTotalNodeManagerContainers) {
       if (numFailedNMContainers.get() == 0) {
         return Status.SUCCEEDED;
@@ -304,6 +332,8 @@ public class DriverApplicationMaster {
   }
 
   public static Map<DriverComponent, ContainerRequest> parseContainerRequests(Configuration conf) {
+    LOG.info("=== DriverAppMaster parseContainerRequests()");
+
     Map<DriverComponent, ContainerRequest> containerRequests = new HashMap<>();
     String nmMemoryString = conf.get(DynoYARNConfigurationKeys.NM_MEMORY, "2g");
     long nmMemory = Utils.parseMemoryString(nmMemoryString);
@@ -312,7 +342,7 @@ public class DriverApplicationMaster {
     String rmMemoryString = conf.get(DynoYARNConfigurationKeys.RM_MEMORY, "4g");
     long rmMemory = Utils.parseMemoryString(rmMemoryString);
     int rmCores = conf.getInt(DynoYARNConfigurationKeys.RM_VCORES, 2);
-    containerRequests.put(DriverComponent.NODE_MANAGER,
+    containerRequests.put(DriverComponent.NODE_MANAGER, // 
         new ContainerRequest(Utils.getNumNMContainerRequests(conf), nmMemory, nmCores, NM_PRIORITY));
     containerRequests.put(DriverComponent.RESOURCE_MANAGER,
         new ContainerRequest(1, rmMemory, rmCores, RM_PRIORITY,
@@ -355,20 +385,28 @@ public class DriverApplicationMaster {
     }
 
     @Override
-    public void onContainerResourceIncreased(ContainerId containerId, Resource resource) { }
+    public void onContainerResourceIncreased(ContainerId containerId, Resource resource) { 
+      LOG.info("===onContainerResourceIncreased ");
+    }
 
     @Override
-    public void onContainerResourceUpdated(ContainerId containerId, Resource resource) { }
+    public void onContainerResourceUpdated(ContainerId containerId, Resource resource) {
+      LOG.info("===onContainerResourceUpdated ");
+  }
 
     @Override
-    public void onIncreaseContainerResourceError(ContainerId containerId, Throwable t) { }
+    public void onIncreaseContainerResourceError(ContainerId containerId, Throwable t) {
+      LOG.info("=== onIncreaseContainerResourceError");
+    }
 
     @Override
-    public void onUpdateContainerResourceError(ContainerId containerId, Throwable t) { }
-
+    public void onUpdateContainerResourceError(ContainerId containerId, Throwable t) {
+      LOG.info("=== onUpdateContainerResourceError");
+    }
   }
 
   private NMCallbackHandler createNMCallbackHandler() {
+    LOG.info("=== createNMCallbackHandler");
     return new NMCallbackHandler();
   }
 
@@ -404,6 +442,7 @@ public class DriverApplicationMaster {
 
     @Override
     public void onContainersAllocated(List<Container> containers) {
+      LOG.info("==== RMCallbackHandler onContainersAllocated");
       /*
        * How is cluster information propagated?
        * We first allocate the ResourceManager first and collect the address of the RM.
@@ -418,6 +457,7 @@ public class DriverApplicationMaster {
         if (container.getPriority().getPriority() == RM_PRIORITY) {
           synchronized (rmAllocationLock) {
             rmAllocationLock.notifyAll();
+
             component = DriverComponent.RESOURCE_MANAGER;
           }
         }
@@ -437,15 +477,16 @@ public class DriverApplicationMaster {
             Utils.poll(() -> {
               FSDataInputStream inputStream = null;
               try {
-                inputStream = fs.open(hdfsStoragePath);
+                inputStream = fs.open(hdfsStoragePath); // error 
                 String out = IOUtils.toString(inputStream);
                 cluster = new ObjectMapper().readValue(out, ClusterInfo.class);
                 String rmHttp = cluster.getRmHost() + ":" + cluster.getRmHttpPort();
-                amRMClient.updateTrackingUrl(rmHttp);
-                LOG.info("Updated tracking url for fake RM to " + rmHttp);
+                // amRMClient.updateTrackingUrl(rmHttp); // TODO: commenting out because throws error for Hadoop v2.9.1. should work for Hadoop v3.1.2 and up. 
+                LOG.info("Updated tracking url for fake RM to " + rmHttp); // TODO  we enver get this log 
                 return true;
               } catch (Exception e) {
                 LOG.info("Not able to get file: " + hdfsStoragePath);
+                LOG.info(e);
                 return false;
               } finally {
                 if (inputStream != null) {
@@ -490,6 +531,7 @@ public class DriverApplicationMaster {
     DriverComponent component;
 
     ContainerLauncher(Container container, DriverComponent component) {
+      LOG.info("=== ContainerLauncher " + container.toString()); 
       this.container = container;
       this.component = component;
     }
@@ -498,12 +540,14 @@ public class DriverApplicationMaster {
      * Set up container's launch command and start the container.
      */
     public void run() {
+      LOG.info("=== ContainerLauncheer run() for : " + component.toString());
       // The command to run inside the container.
       List<String> commands = new ArrayList<>();
       StringJoiner arguments = new StringJoiner(" ");
       long memory = component == DriverComponent.NODE_MANAGER
           ? Utils.parseMemoryString(dyarnConf.get(DynoYARNConfigurationKeys.NM_MEMORY, "2g"))
           : Utils.parseMemoryString(dyarnConf.get(DynoYARNConfigurationKeys.RM_MEMORY, "4g"));
+          
       int heapSize = (int) (memory * 0.9f);
       arguments.add("$JAVA_HOME/bin/java");
       arguments.add("-Xmx" + heapSize + "m");
@@ -516,13 +560,14 @@ public class DriverApplicationMaster {
       arguments.add("1>" + ApplicationConstants.LOG_DIR_EXPANSION_VAR + "/stdout");
       arguments.add("2>" + ApplicationConstants.LOG_DIR_EXPANSION_VAR + "/stderr");
       commands.add(arguments.toString());
-
+      LOG.info("=== run() arguments: " + arguments.toString()); 
       ByteBuffer tokens;
       tokens = allTokens.duplicate();
       // Set logs to be readable by everyone.
       Map<ApplicationAccessType, String> acls = new HashMap<>(2);
       acls.put(ApplicationAccessType.VIEW_APP, "*");
       acls.put(ApplicationAccessType.MODIFY_APP, " ");
+
       Map<String, String> containerShellEnv = new ConcurrentHashMap<>();
       StringBuilder classPathEnv = new StringBuilder(ApplicationConstants.Environment.CLASSPATH.$$())
           .append(ApplicationConstants.CLASS_PATH_SEPARATOR).append("./*");
@@ -532,6 +577,18 @@ public class DriverApplicationMaster {
         classPathEnv.append(ApplicationConstants.CLASS_PATH_SEPARATOR);
         classPathEnv.append(c.trim());
       }
+
+      classPathEnv.append(ApplicationConstants.CLASS_PATH_SEPARATOR).append("./log4j.properties");
+      classPathEnv.append(ApplicationConstants.CLASS_PATH_SEPARATOR).append("/opt/yarn/binary/share/hadoop/common/*");
+      classPathEnv.append(ApplicationConstants.CLASS_PATH_SEPARATOR).append("/opt/yarn/binary/share/hadoop/common/lib/*");
+      classPathEnv.append(ApplicationConstants.CLASS_PATH_SEPARATOR).append("/opt/yarn/binary/share/hadoop/hdfs/*");
+      classPathEnv.append(ApplicationConstants.CLASS_PATH_SEPARATOR).append("/opt/yarn/binary/share/hadoop/httpfs/*");
+      classPathEnv.append(ApplicationConstants.CLASS_PATH_SEPARATOR).append("/opt/yarn/binary/share/hadoop/kms/*");
+      classPathEnv.append(ApplicationConstants.CLASS_PATH_SEPARATOR).append("/opt/yarn/binary/share/hadoop/mapreduce/*");
+      classPathEnv.append(ApplicationConstants.CLASS_PATH_SEPARATOR).append("/opt/yarn/binary/share/hadoop/spark/*"); // not sure if needed
+      classPathEnv.append(ApplicationConstants.CLASS_PATH_SEPARATOR).append("/opt/yarn/binary/share/hadoop/tools/*");
+      classPathEnv.append(ApplicationConstants.CLASS_PATH_SEPARATOR).append("/opt/yarn/binary/share/hadoop/yarn/*");
+
       containerShellEnv.put("CLASSPATH", classPathEnv.toString());
       containerShellEnv.put(Constants.COMPONENT_NAME, component.toString());
       containerShellEnv.put(ApplicationConstants.APPLICATION_WEB_PROXY_BASE_ENV,
@@ -546,7 +603,10 @@ public class DriverApplicationMaster {
       }
       ContainerLaunchContext ctx = ContainerLaunchContext.newInstance(containerResources, containerShellEnv,
           commands, null, tokens, acls);
+      LOG.info("=== about to start nmClientAsync.startContainerAsync"); 
       nmClientAsync.startContainerAsync(container, ctx);
+      LOG.info("=== done nmClientAsync.startContainerAsync()"); 
+
     }
   }
 
@@ -575,6 +635,7 @@ public class DriverApplicationMaster {
    * Schedule tasks - RM container request and NM container requests.
    */
   private void scheduleTasks() throws InterruptedException {
+    LOG.info("=== scheduleTasks()"); 
     // Schedule ResourceManager first.
     ContainerRequest rmRequest = requestMap.get(DriverComponent.RESOURCE_MANAGER);
     LOG.info("Start to schedule Resource Manager..");
@@ -582,6 +643,7 @@ public class DriverApplicationMaster {
     long clusterDurationMs = dyarnConf.getLong(DynoYARNConfigurationKeys.DRIVER_DURATION_MS,
         DynoYARNConfigurationKeys.DEFAULT_DRIVER_DURATION_MS);
     synchronized (rmAllocationLock) {
+      LOG.info("=== clusterDurationMs " + clusterDurationMs); 
       rmAllocationLock.wait(clusterDurationMs);
     }
     LOG.info("Scheduled Resource Manager, moving to schedule node managers!");

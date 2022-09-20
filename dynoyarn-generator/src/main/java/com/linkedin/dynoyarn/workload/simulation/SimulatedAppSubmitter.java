@@ -15,7 +15,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
-import java.security.PrivilegedAction;
+// import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -32,7 +32,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileStatus;
+// import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -90,6 +90,7 @@ public class SimulatedAppSubmitter {
 
   private boolean init(String[] args) throws IOException {
     fs = FileSystem.get(conf);
+    LOG.info("=== FileSystem.get conf " + conf);
     Options opts = new Options();
     opts.addOption("cluster_spec_location", true, "Path on HDFS to cluster spec information.");
     opts.addOption("multiplier", true, "How many times to submit each app.");
@@ -112,6 +113,9 @@ public class SimulatedAppSubmitter {
     ClusterInfo cluster = new ObjectMapper().readValue(out, ClusterInfo.class);
     rmEndpoint = cluster.getRmHost() + ":" + cluster.getRmPort();
     conf.set(YarnConfiguration.RM_ADDRESS, rmEndpoint);
+    // conf.set(YarnConfiguration.RM_ADDRESS + ".rm1", rmEndpoint);
+    // conf.set(YarnConfiguration.RM_ADDRESS + ".rm2", rmEndpoint);
+
     conf.setLong(YarnConfiguration.RESOURCEMANAGER_CONNECT_MAX_WAIT_MS,
         YarnConfiguration.DEFAULT_RESOURCEMANAGER_CONNECT_RETRY_INTERVAL_MS);
     LOG.info("Set " + YarnConfiguration.RM_ADDRESS + " to " + rmEndpoint);
@@ -174,34 +178,52 @@ public class SimulatedAppSubmitter {
             long currentTime = System.currentTimeMillis();
             if (actualSubmissionTime > currentTime) {
               long sleepTime = actualSubmissionTime - currentTime;
-              LOG.debug("Sleeping for " + sleepTime + "ms");
+              LOG.info("Sleeping for " + sleepTime + "ms");
               Thread.sleep(sleepTime);
             }
             LOG.info("Submitting app " + appSpec.getAppId() + " with submit time " + appSpec.getSubmitTime());
-            if (LOG.isDebugEnabled()) {
-              LOG.debug("Spec: " + appSpec);
-            }
-            proxyUser.doAs(new PrivilegedAction<Boolean>() {
-              @Override
-              public Boolean run() {
+            // if (LOG.isDebugEnabled()) {
+            LOG.info("Spec: " + appSpec);
+            // }
+            // proxyUser.doAs(new PrivilegedAction<Boolean>() {
+            //   @Override
+            //   public Boolean run() {
                 try {
+                  LOG.info("=== creating yarnClient"); 
+
                   YarnClient yarnClient = YarnClient.createYarnClient();
                   yarnClient.init(conf);
+                  // LOG.info("=== yarn client RM webapp address " + yarnClient.getConfig().get(YarnConfiguration.RM_ADDRESS));
+                  // LOG.info("=== yarn client RM1 address " + yarnClient.getConfig().get(YarnConfiguration.RM_ADDRESS + ".rm1"));
+                  // LOG.info("=== yarn client RM2 address " + yarnClient.getConfig().get(YarnConfiguration.RM_ADDRESS + ".rm2"));
+                  LOG.info("=== yarn client conf " + conf.toString());
+                  LOG.info(conf);
                   yarnClient.start();
+                  LOG.info("=== yarnClient started. about to create application"); 
+                  
                   YarnClientApplication app = yarnClient.createApplication();
+                  LOG.info("=== getting appContext"); 
                   ApplicationSubmissionContext appContext = app.getApplicationSubmissionContext();
                   ApplicationId appId = appContext.getApplicationId();
+                  LOG.info("=== getting AM resource request"); 
                   ResourceRequestSpec.RequestedResource amResourceRequest = appSpec.getAmResourceRequest();
                   Resource capability = Resource.newInstance(amResourceRequest.getMemoryMB(), amResourceRequest.getVcores());
+                  LOG.info("=== setting a bunch of things in appContext");
                   appContext.setResource(capability);
+                  LOG.info("=== set resource");
                   appContext.setAMContainerSpec(amSpec);
+                  LOG.info("=== set amSpec");
                   appContext.setQueue(appSpec.getQueue());
                   appContext.setNodeLabelExpression(appSpec.getNodeLabel());
                   appContext.setApplicationType(appSpec.getAppType());
+
+                  LOG.info("=== about to getApplicationTags"); 
                   Set<String> appTags = new HashSet<>(appSpec.getApplicationTags());
                   // originalAppId is the appId that actually ran on the real cluster which is being parsed here.
                   // When submitting this app to the fake cluster it will generate a new appId. So when navigating to the
                   // new app on the fake cluster, this tag identifies which real app this fake app corresponds to.
+
+                  LOG.info("=== app Id: " + appSpec.getAppId()); 
                   appTags.add("originalAppId=" + appSpec.getAppId());
                   // Add abridged app spec to tag for debugging
                   appTags.add(constructAbridgedAppSpec(appSpec));
@@ -209,15 +231,20 @@ public class SimulatedAppSubmitter {
                     appTags.add("cluster:" + appSpec.getNodeLabel());
                   }
                   appContext.setApplicationTags(appTags);
+                  LOG.info("=== yarnClient about to submit application" + appSpec.getAppId());
                   yarnClient.submitApplication(appContext);
-
-                  return exitUponSubmission ? true : monitorApplication(yarnClient, appId);
+                  LOG.info("=== submitted application " + appSpec.getAppId());
+                  // return exitUponSubmission ? true : monitorApplication(yarnClient, appId);
+                  if (!exitUponSubmission) {
+                    monitorApplication(yarnClient, appId);
+                  }
                 } catch (Exception e) {
+                  LOG.info(e);
                   LOG.warn("Failed to submit simulated job with appId " + appSpec.getAppId());
                   throw new RuntimeException(e);
                 }
-              }
-            });
+              // }
+            // });
           } catch (Exception e) {
             throw new RuntimeException(e);
           }
@@ -241,14 +268,18 @@ public class SimulatedAppSubmitter {
 
   private boolean monitorApplication(YarnClient yarnClient, ApplicationId appId)
       throws YarnException, IOException, InterruptedException {
-
     while (true) {
+      LOG.info("=== monitorApplication"); 
+
       // Check app status every 1 second.
       Thread.sleep(1000);
 
       // Get application report for the appId we are interested in
+      LOG.info("=== monitorApplication: getApplicationReport");
       ApplicationReport report = yarnClient.getApplicationReport(appId);
+      LOG.info("=== monitorApplication: getYarnApplicationState");
       YarnApplicationState state = report.getYarnApplicationState();
+      LOG.info("=== monitorApplication: getFinalApplicationStatus");
       FinalApplicationStatus dsStatus = report.getFinalApplicationStatus();
       if (YarnApplicationState.FINISHED == state || YarnApplicationState.FAILED == state
           || YarnApplicationState.KILLED == state) {
@@ -271,19 +302,25 @@ public class SimulatedAppSubmitter {
     Utils.localizeHDFSResource(fs, System.getenv(Constants.SIMULATED_FATJAR_NAME), Constants.SIMULATED_FATJAR, LocalResourceType.FILE, localResources);
     Utils.localizeHDFSResource(fs, System.getenv(Constants.DYARN_CONF_NAME), Constants.DYARN_CONF_NAME, LocalResourceType.FILE, localResources);
     String hdfsClasspath = System.getenv("HDFS_CLASSPATH");
+    LOG.info("=== hdfsClasspath: " + hdfsClasspath);
     if (hdfsClasspath != null) {
-      for (FileStatus status : fs.listStatus(new Path(hdfsClasspath))) {
-        Utils.localizeHDFSResource(fs, status.getPath().toString(), status.getPath().getName(), LocalResourceType.FILE,
-            localResources);
-      }
+      LOG.info("=== hdfsCLasspath not null. please uncomment this section");
+      // for (FileStatus status : fs.listStatus(new Path(hdfsClasspath))) {
+      //   Utils.localizeHDFSResource(fs, status.getPath().toString(), status.getPath().getName(), LocalResourceType.FILE,
+      //       localResources);
+      // }
     }
 
     containerEnv.put(Constants.DYARN_CONF_NAME, new Path(System.getenv(Constants.DYARN_CONF_NAME)).getName());
-    containerEnv.put("CLASSPATH", "./*:$HADOOP_CONF_DIR:$HADOOP_YARN_HOME/share/hadoop/yarn/*:$HADOOP_YARN_HOME/lib/*");
+    containerEnv.put("CLASSPATH", "./*:$HADOOP_CONF_DIR:$HADOOP_YARN_HOME/share/hadoop/yarn/*:$HADOOP_YARN_HOME/lib/*" 
+    + ":$HADOOP_YARN_HOME/share/hadoop/common/*:$HADOOP_YARN_HOME/share/hadoop/hdfs/*:$HADOOP_YARN_HOME/share/hadoop/common/lib/*"
+    + ":$HADOOP_YARN_HOME/share/hadoop/httpfs/*:"); // TODO need to add more classpaths here?
     containerEnv.put(Constants.IS_AM, "true");
     containerEnv.put("HDFS_CLASSPATH", System.getenv("HDFS_CLASSPATH"));
     containerEnv.put(Constants.APP_SPEC_NAME, new ObjectMapper().writeValueAsString(appSpec)
         .replaceAll("\"", "'"));
+        
+    LOG.info("=== finished putting in containerEnv. about to set app ACLs");
 
     // Set logs to be readable by everyone. Set app to be modifiable only by app owner.
     Map<ApplicationAccessType, String> acls = new HashMap<>(2);
@@ -308,13 +345,17 @@ public class SimulatedAppSubmitter {
 
     List<String> commands = new ArrayList<>();
     commands.add(arguments.toString());
+    LOG.info("=== arguments to start simulated ApplicationMaster " + arguments.toString());
 
     amContainer.setCommands(commands);
     if (tokens != null) {
+      LOG.info("=== tokens != null ");
       amContainer.setTokens(tokens);
     }
     amContainer.setEnvironment(containerEnv);
+    LOG.info("=== about to setLocalResources");
     amContainer.setLocalResources(localResources);
+    LOG.info("=== returning from createAMContainerSpec"); 
     return amContainer;
   }
 }

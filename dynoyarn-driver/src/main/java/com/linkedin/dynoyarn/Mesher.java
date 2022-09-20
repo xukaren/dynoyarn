@@ -140,11 +140,13 @@ public class Mesher {
     }
     if (componentName.equals(DriverComponent.RESOURCE_MANAGER.toString())) {
       String logOutputPath = mesher.dyarnConf.get(DynoYARNConfigurationKeys.RM_LOG_OUTPUT_PATH);
+      LOG.info("=== logOutputPath :" + logOutputPath); 
       if (logOutputPath != null) {
         Path finalPath = new Path(logOutputPath);
         if (mesher.dyarnConf.get(CommonJobProperties.EXEC_ID) != null) {
           finalPath = new Path(finalPath, mesher.dyarnConf.get(CommonJobProperties.EXEC_ID));
         }
+        LOG.info("=== copying RM logs to HDFS path: " + finalPath.toString());
         copyRMLogsToHDFS(mesher, finalPath);
       }
     }

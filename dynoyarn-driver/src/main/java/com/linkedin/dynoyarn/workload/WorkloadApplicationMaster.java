@@ -14,6 +14,7 @@ import com.linkedin.dynoyarn.workload.preprocessor.AppSpecPreprocessor;
 import com.linkedin.dynoyarn.workload.simulation.AppSpec;
 import com.linkedin.dynoyarn.workload.simulation.ParserUtils;
 import com.linkedin.dynoyarn.workload.simulation.SimulatedAppSubmitter;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
@@ -108,6 +109,7 @@ public class WorkloadApplicationMaster {
   }
 
   public boolean init(String[] args) throws Exception {
+    LOG.info("=== WorkloadApplicationMaster init()");
     Options opts = new Options();
     opts.addOption("cluster_spec_location", true, "Location on HDFS of cluster spec.");
 
@@ -120,18 +122,24 @@ public class WorkloadApplicationMaster {
     }
 
     String confFile = new Path(System.getenv(Constants.DYARN_CONF_NAME)).getName();
+    LOG.info("=== confFile " + confFile);
     if (confFile != null) {
+      LOG.info("=== confFile not null, adding confFil as resource " + confFile);
       dyarnConf.addResource(new Path(confFile));
     }
     fs = FileSystem.get(dyarnConf);
+    LOG.info("=== got dyarn conf from FS ");
+
     appResourcesPath = Utils.constructAppResourcesPath(fs, Utils.getApplicationId().toString());
     clusterSpecLocation = cliParser.getOptionValue("cluster_spec_location");
     Utils.poll(() -> {
       InputStream inputStream = null;
       try {
+        LOG.info("=== trying to get path " + clusterSpecLocation); 
         inputStream = fs.open(new Path(clusterSpecLocation));
         String out = IOUtils.toString(inputStream);
         clusterInfo = new org.codehaus.jackson.map.ObjectMapper().readValue(out, ClusterInfo.class);
+        LOG.info("=== got cluster info(), returning true from  Utils.poll()"); 
         return true;
       } catch (Exception e) {
         LOG.info("Not able to get file: " + clusterSpecLocation);
@@ -142,18 +150,22 @@ public class WorkloadApplicationMaster {
         }
       }
     }, 5, 3000);
+    LOG.info("=== finished polling"); 
     Configuration fakeRMConf = new Configuration(dyarnConf);
     String rmEndpoint = clusterInfo.getRmHost() + ":" + clusterInfo.getRmPort();
     fakeRMConf.set(YarnConfiguration.RM_ADDRESS, rmEndpoint);
+    LOG.info("=== fake resourcemanager.address " + rmEndpoint); 
     fakeRMConf.setLong(YarnConfiguration.RESOURCEMANAGER_CONNECT_MAX_WAIT_MS, YarnConfiguration.DEFAULT_RESOURCEMANAGER_CONNECT_RETRY_INTERVAL_MS);
     appSpecPreprocessors = dyarnConf.<AppSpecPreprocessor>getInstances(
         DynoYARNConfigurationKeys.WORKLOAD_APP_SPEC_PREPROCESSOR_CLASSES, AppSpecPreprocessor.class);
+    LOG.info("=== appSpecPreprocessors length " + appSpecPreprocessors.size());
     for (AppSpecPreprocessor preprocessor : appSpecPreprocessors) {
       preprocessor.init(fakeRMConf);
       LOG.info("Initialized app spec preprocessor: " + preprocessor.getClass().getCanonicalName());
     }
     appsPerContainer = dyarnConf.getInt(DynoYARNConfigurationKeys.WORKLOAD_APPS_PER_CONTAINER,
         DynoYARNConfigurationKeys.DEFAULT_WORKLOAD_APPS_PER_CONTAINER);
+    LOG.info("=== end of run()");
     return true;
   }
 
@@ -163,12 +175,14 @@ public class WorkloadApplicationMaster {
     nmClientAsync = new NMClientAsyncImpl(containerListener);
     nmClientAsync.init(dyarnConf);
     nmClientAsync.start();
+    LOG.info(" === started nmClientAsync");
 
     // Init AMRMClient
-    AMRMClientAsync.CallbackHandler allocListener = new RMCallbackHandler();
+    AMRMClientAsync.AbstractCallbackHandler allocListener = new RMCallbackHandler();
     amRMClient = AMRMClientAsync.createAMRMClientAsync(1000, allocListener);
     amRMClient.init(dyarnConf);
     amRMClient.start();
+    LOG.info("=== starteded amRMClient");
 
     for (AppSpecPreprocessor preprocessor : appSpecPreprocessors) {
       preprocessor.start();
@@ -276,6 +290,7 @@ public class WorkloadApplicationMaster {
   }
 
   private void parseAppSpecs() throws IOException {
+    LOG.info("=== parseAppSpecs");
     // Truncate apps that are submitted earlier than the user-provided workloadStartTime
     appSpecs = ParserUtils.parseWorkloadFile(Constants.WORKLOAD_SPEC_NAME);
     Collections.sort(appSpecs);
@@ -363,7 +378,7 @@ public class WorkloadApplicationMaster {
 
     @Override
     public void onContainersAllocated(List<Container> containers) {
-      LOG.info("Allocated: " + containers.size() + " containers.");
+      LOG.info("Allocated: " + containers.size() + " containers."); // Allocated:  1 containers
       numAllocatedContainers.addAndGet(containers.size());
       for (Container container : containers) {
         // Need to explicitly remove container requests from remoteRequestsTable in AMRMClient, otherwise
@@ -434,13 +449,17 @@ public class WorkloadApplicationMaster {
       arguments.add("-XX:CICompilerCount=2");
       arguments.add("-XX:ParallelGCThreads=2");
       arguments.add(SimulatedAppSubmitter.class.getName());
+      LOG.info("=== SimulatedAppSubmitter class name  " + SimulatedAppSubmitter.class.getName());
       arguments.add("-cluster_spec_location " + clusterSpecLocation);
+      LOG.info("=== cluster_spec_location " + clusterSpecLocation); 
       arguments.add("-multiplier " + dyarnConf.getFloat(DynoYARNConfigurationKeys.WORKLOAD_MULTIPLIER,
           DynoYARNConfigurationKeys.DEFAULT_WORKLOAD_MULTIPLIER));
       if (dyarnConf.getBoolean(
           DynoYARNConfigurationKeys.WORKLOAD_SUBMITTER_EXIT_UPON_SUBMISSION,
           DynoYARNConfigurationKeys.DEFAULT_WORKLOAD_SUBMITTER_EXIT_UPON_SUBMISSION)) {
         arguments.add("-exit_upon_submission");
+      } else {
+        LOG.info("=== setting exit_upon_submission to false");
       }
       arguments.add("1>" + ApplicationConstants.LOG_DIR_EXPANSION_VAR + "/stdout");
       arguments.add("2>" + ApplicationConstants.LOG_DIR_EXPANSION_VAR + "/stderr");
@@ -465,16 +484,36 @@ public class WorkloadApplicationMaster {
         classPathEnv.append(ApplicationConstants.CLASS_PATH_SEPARATOR);
         classPathEnv.append(c.trim());
       }
+      classPathEnv.append(ApplicationConstants.CLASS_PATH_SEPARATOR).append("./log4j.properties");
+      classPathEnv.append(ApplicationConstants.CLASS_PATH_SEPARATOR).append("/opt/yarn/binary/share/hadoop/common/*");
+      classPathEnv.append(ApplicationConstants.CLASS_PATH_SEPARATOR).append("/opt/yarn/binary/share/hadoop/common/lib/*");
+      classPathEnv.append(ApplicationConstants.CLASS_PATH_SEPARATOR).append("/opt/yarn/binary/share/hadoop/hdfs/*");
+      classPathEnv.append(ApplicationConstants.CLASS_PATH_SEPARATOR).append("/opt/yarn/binary/share/hadoop/httpfs/*");
+      classPathEnv.append(ApplicationConstants.CLASS_PATH_SEPARATOR).append("/opt/yarn/binary/share/hadoop/kms/*");
+      classPathEnv.append(ApplicationConstants.CLASS_PATH_SEPARATOR).append("/opt/yarn/binary/share/hadoop/mapreduce/*");
+      classPathEnv.append(ApplicationConstants.CLASS_PATH_SEPARATOR).append("/opt/yarn/binary/share/hadoop/spark/*"); // not sure if needed
+      classPathEnv.append(ApplicationConstants.CLASS_PATH_SEPARATOR).append("/opt/yarn/binary/share/hadoop/tools/*");
+      classPathEnv.append(ApplicationConstants.CLASS_PATH_SEPARATOR).append("/opt/yarn/binary/share/hadoop/yarn/*");
+
+      LOG.info("=== putting CLASSPATH into containerShellEnv  " + classPathEnv.toString()); 
       containerShellEnv.put("CLASSPATH", classPathEnv.toString());
+      LOG.info("=== putting SIMULATED_FATJAR_NAME into containerShellEnv " + System.getenv(Constants.SIMULATED_FATJAR_NAME)); 
       containerShellEnv.put(Constants.SIMULATED_FATJAR_NAME, System.getenv(Constants.SIMULATED_FATJAR_NAME));
-      containerShellEnv.put("HDFS_CLASSPATH", System.getenv("HDFS_CLASSPATH"));
-      containerShellEnv.put(Constants.DYARN_CONF_NAME, System.getenv(Constants.DYARN_CONF_NAME));
+      LOG.info("=== putting HDFS_CLASSPATH into containerShellEnv " + System.getenv("HDFS_CLASSPATH"));
+      // containerShellEnv.put("HDFS_CLASSPATH", System.getenv("HDFS_CLASSPATH")); 
+      // TODO: this is a hack because gives NullPointer above (why?)
+      // transform `/tmp/.dyarn/application_1662175784079_0019/dynoyarn-generator-0.0.1-all.jar` to `tmp/.dyarn/application_1662175784079_0019/lib`
+      containerShellEnv.put("HDFS_CLASSPATH", System.getenv(Constants.DYARN_CONF_NAME).substring(0, 43) + "lib");
+      LOG.info("=== putting DYARN_CONF_NAME into containerShellEnv " +  System.getenv(Constants.DYARN_CONF_NAME));
+      containerShellEnv.put(Constants.DYARN_CONF_NAME, System.getenv(Constants.DYARN_CONF_NAME)); 
+      
       try (PrintWriter out = new PrintWriter(Constants.SPEC_FILE, "UTF-8")) {
         String spec = new ObjectMapper().writeValueAsString(containerAppSpecs)
             .replaceAll("\"", "'");
         out.println(spec);
         out.flush();
         Map<String, LocalResource> containerResources = getContainerResources();
+        LOG.info("=== got container resources. about to localize local resources "); 
         Utils.localizeLocalResource(dyarnConf, fs, Constants.SPEC_FILE, LocalResourceType.FILE,
             new Path(appResourcesPath + "/dynoyarn-" + container.getId()),
             containerResources);

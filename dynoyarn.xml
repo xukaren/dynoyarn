@@ -9,19 +9,26 @@
     <value>30</value>
     <description>Number of node managers per container.</description>
   </property>
+    <!-- TODO think of better number of memory/vcores -->
   <property>
     <name>dynoyarn.nodemanager.memory</name>
-    <value>50g</value>
+    <value>1g</value>
     <description>Memory size of simulated node manager containers.</description>
   </property>
   <property>
+    <name>dynoyarn.nodemanager.vcores</name>
+    <value>1</value>
+    <description>Number of node managers for the simulated cluster.</description>
+  </property>
+  <property>
     <name>dynoyarn.nodemanager.instances</name>
-    <value>600</value>
+    <value>30</value>
     <description>Number of node managers for the simulated cluster.</description>
   </property>
   <property>
     <name>dynoyarn.resourcemanager.node-label</name>
-    <value>dynorm</value>
+    <value></value>
+    <!-- TODO figure out why dynorm partition not working -->
     <description>
       Node label for simulated resource manager container. To guarantee the RM is placed
       on the same node on each simulation iteration, this node label should only contain one node.
@@ -46,8 +53,16 @@
     <description>Memory size of the workload application's AM, in MB.</description>
   </property>
   <property>
+    <name>dynoyarn.workload.app-submitter-exit-upon-submission</name>
+    <value>false</value>
+  </property>
+  <!-- <property>
+    <name>dynoyarn.workload.app-spec-preprocessor-classes</name>
+    <value>com.linkedin.dynoyarn.workload.preprocessor.QueueCapacityPreprocessor</value>
+  </property> -->
+  <property>
     <name>dynoyarn.workload.apps-per-container</name>
-    <value>1000</value>
+    <value>5</value>
     <description>
       The number of apps submitted from each workload container. Each submitted application
       spawns a separate thread. Therefore, use this config to tune the number of threads per
@@ -56,22 +71,24 @@
   </property>
   <property>
     <name>dynoyarn.app-submitter.memory</name>
-    <value>49152</value>
+    <value>10384</value>
+    <!-- Max is 16384 I believe -->
     <description>Memory size (in MB) of each workload container.</description>
   </property>
   <property>
     <name>dynoyarn.app-submitter.vcores</name>
-    <value>20</value>
+    <value>8</value>
+    <!-- YRM only allows maximum 8 vcores per container to be allocated by the RM -->
     <description>Vcores of each workload container.</description>
   </property>
   <property>
     <name>dynoyarn.driver.queue</name>
-    <value>default</value>
+    <value>test_sub_1</value>
     <description>Queue which the driver application is submitted to.</description>
   </property>
   <property>
     <name>dynoyarn.workload.queue</name>
-    <value>default</value>
+    <value>test_sub_1</value>
     <description>Queue which the workload application is submitted to.</description>
   </property>
   <property>
@@ -85,7 +102,8 @@
   </property>
   <property>
     <name>dynoyarn.driver.simulation-duration-ms</name>
-    <value>600000</value>
+    <value>1200000</value> 
+    <!-- 20 minutes -->
     <description>Time, in ms, of how long the simulation should run before terminating.</description>
   </property>
   <property>
@@ -96,6 +114,7 @@
   <property>
     <name>dynoyarn.workload.multiplier</name>
     <value>1</value>
+    <!--  TODO configure this later  -->
     <description>
       Multiplier for scaling up a workload to stress test the resource manager.
       For example, setting this to 1.5 will submit each application in the trace once, plus a

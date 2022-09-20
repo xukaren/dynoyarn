@@ -152,6 +152,7 @@ public class FakeContainersLauncher extends ContainersLauncher {
 
   @Override
   public void handle(ContainersLauncherEvent event) {
+   
     Container container = event.getContainer();
     ContainerId containerId = container.getContainerId();
     ContainerLaunchContext launchContext = container.getLaunchContext();
@@ -162,6 +163,7 @@ public class FakeContainersLauncher extends ContainersLauncher {
     }
     switch (event.getType()) {
       case LAUNCH_CONTAINER:
+        LOG.info("=== launching a container"); 
         long containerRuntime = Long.parseLong(launchContext.getEnvironment()
             .get(CONTAINER_RUNTIME_ENV));
         long finishTime = clock.getTime() + containerRuntime;
