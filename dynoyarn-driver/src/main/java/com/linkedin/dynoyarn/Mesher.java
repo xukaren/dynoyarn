@@ -65,31 +65,31 @@ public class Mesher {
       ClusterInfo clusterInfo = new ClusterInfo();
 
       ServerSocket portSocket = new ServerSocket(0);
-      int port = portSocket.getLocalPort();
+      int port = 8032; // portSocket.getLocalPort();
       env.put(Constants.RM_PORT, String.valueOf(port));
       portSocket.close();
       clusterInfo.setRmPort(port);
 
       portSocket = new ServerSocket(0);
-      port = portSocket.getLocalPort();
+      port = 8030; // portSocket.getLocalPort();
       env.put(Constants.RM_SCHEDULER_PORT, String.valueOf(port));
       portSocket.close();
       clusterInfo.setRmSchedulerPort(port);
 
       portSocket = new ServerSocket(0);
-      port = portSocket.getLocalPort();
+      port = 8033; // portSocket.getLocalPort();
       env.put(Constants.RM_ADMIN_PORT, String.valueOf(port));
       portSocket.close();
       clusterInfo.setRmAdminPort(port);
 
       portSocket = new ServerSocket(0);
-      port = portSocket.getLocalPort();
+      port = 8088; // portSocket.getLocalPort();
       env.put(Constants.RM_HTTP_PORT, String.valueOf(port));
       portSocket.close();
       clusterInfo.setRmHttpPort(port);
 
       portSocket = new ServerSocket(0);
-      port = portSocket.getLocalPort();
+      port = 8031; // portSocket.getLocalPort();
       env.put(Constants.RM_TRACKER_PORT, String.valueOf(port));
       portSocket.close();
       clusterInfo.setRmTrackerPort(port);
