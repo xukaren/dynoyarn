@@ -27,8 +27,7 @@
   </property>
   <property>
     <name>dynoyarn.resourcemanager.node-label</name>
-    <value></value>
-    <!-- TODO figure out why dynorm partition not working -->
+    <value>dynorm</value>
     <description>
       Node label for simulated resource manager container. To guarantee the RM is placed
       on the same node on each simulation iteration, this node label should only contain one node.
