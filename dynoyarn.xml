@@ -101,8 +101,8 @@
   </property>
   <property>
     <name>dynoyarn.driver.simulation-duration-ms</name>
-    <value>1200000</value> 
-    <!-- 20 minutes -->
+    <value>7200000</value> 
+    <!-- 2 hours -->
     <description>Time, in ms, of how long the simulation should run before terminating.</description>
   </property>
   <property>
