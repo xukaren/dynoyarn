@@ -166,6 +166,8 @@ public class Utils {
    */
   public static Path localizeLocalResource(Configuration conf, FileSystem fs, String localSrcPath, LocalResourceType resourceType,
       Path appResourcesPath, Map<String, LocalResource> localResources) throws IOException {
+    
+        LOG.info("=== localLocalResource, localSrcPath = " + localSrcPath + " appResourcesPath = " + appResourcesPath);
     URI srcURI;
     try {
       srcURI = new URI(localSrcPath);
@@ -365,9 +367,7 @@ public class Utils {
    * @return HDFS path used for this application's resources
    */
   public static Path constructAppResourcesPath(FileSystem fs, String appId) {
-    return new Path("/tmp/", Constants.DYARN_FOLDER + Path.SEPARATOR + appId); // store at /tmp/* instead of /user/$USER/* 
-
-    // return new Path(fs.getHomeDirectory(), Constants.DYARN_FOLDER + Path.SEPARATOR + appId);
+    return new Path(fs.getHomeDirectory(), Constants.DYARN_FOLDER + Path.SEPARATOR + appId);
   }
 
   /**
