@@ -167,7 +167,7 @@ public class Utils {
   public static Path localizeLocalResource(Configuration conf, FileSystem fs, String localSrcPath, LocalResourceType resourceType,
       Path appResourcesPath, Map<String, LocalResource> localResources) throws IOException {
     
-        LOG.info("=== localLocalResource, localSrcPath = " + localSrcPath + " appResourcesPath = " + appResourcesPath);
+    LOG.info("=== localizeLocalResource, localSrcPath = " + localSrcPath + " appResourcesPath = " + appResourcesPath);
     URI srcURI;
     try {
       srcURI = new URI(localSrcPath);
@@ -196,6 +196,7 @@ public class Utils {
             resourceType, LocalResourceVisibility.PRIVATE,
             scFileStatus.getLen(), scFileStatus.getModificationTime());
     localResources.put(srcFile.getName(), scRsrc);
+    LOG.info("=== dst of " + localSrcPath + " is " + dst.toString());
     return dst;
   }
 
@@ -309,7 +310,7 @@ public class Utils {
         }
       }
     }
-    LOG.debug("Successfully fetched tokens.");
+    LOG.info("Successfully fetched tokens.");
     DataOutputBuffer buffer = new DataOutputBuffer();
     cred.writeTokenStorageToStream(buffer);
     return ByteBuffer.wrap(buffer.getData(), 0, buffer.getLength());
@@ -351,11 +352,15 @@ public class Utils {
   public static void localizeHDFSResource(FileSystem fs, String hdfsSrcPath, String dstName, LocalResourceType resourceType,
       Map<String, LocalResource> localResources) throws IOException {
     Path src = new Path(hdfsSrcPath);
+    LOG.info("=== localizeHDFSResource, hdfsSrcPath = " + hdfsSrcPath + " dstName= " + dstName);
+    LOG.info(" src.toURI= " + src.toUri() + ", getYarnUrlFromURI " + ConverterUtils.getYarnUrlFromURI(src.toUri()));
+    LOG.info("getYarnUrlFromPath= " + ConverterUtils.getYarnUrlFromPath(src));
     FileStatus scFileStatus = fs.getFileStatus(src);
     LocalResource scRsrc =
         LocalResource.newInstance(
-            ConverterUtils.getYarnUrlFromURI(src.toUri()),
-            resourceType, LocalResourceVisibility.PRIVATE,
+            ConverterUtils.getYarnUrlFromPath(src),
+            // ConverterUtils.getYarnUrlFromURI(src.toUri()),
+            resourceType, LocalResourceVisibility.PUBLIC,
             scFileStatus.getLen(), scFileStatus.getModificationTime());
     localResources.put(dstName, scRsrc);
   }

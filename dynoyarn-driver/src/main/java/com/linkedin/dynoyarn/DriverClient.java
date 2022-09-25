@@ -68,7 +68,7 @@ public class DriverClient implements AutoCloseable {
   public static final String HADOOP_BINARY_PATH_OPT = "hadoop_binary_path";
   public static final String CONF_OPT = "conf";
   public static final String CAPACITY_SCHEDULER_CONF_OPT = "capacity_scheduler_conf";
-  public static final String HDFS_CLASSPATH_OPT = "hdfs_classpath";
+  // public static final String HDFS_CLASSPATH_OPT = "hdfs_classpath"; // not used 
 
   private YarnClient yarnClient;
   private Configuration dyarnConf;
@@ -151,8 +151,8 @@ public class DriverClient implements AutoCloseable {
     LOG.info("=== got capability : " + capability.getMemorySize() + " " + capability.toString()); 
     appContext.setResource(capability);
     LOG.info("=== set resources for appContext: " + capability.getMemorySize() + " " + capability.toString()); 
-    LOG.info("=== tokens " + Utils.getTokens(dyarnConf, yarnClient, false).toString()); // may not print properly
-    ContainerLaunchContext amSpec = createAMContainerSpec(appId, Utils.getTokens(dyarnConf, yarnClient, false));
+    LOG.info("=== tokens " + Utils.getTokens(dyarnConf, yarnClient, true).toString()); // may not print properly
+    ContainerLaunchContext amSpec = createAMContainerSpec(appId, Utils.getTokens(dyarnConf, yarnClient, true));
     LOG.info("=== created AMContainerSpec : " + capability.getMemorySize() + " " + capability.toString()); 
     appContext.setAMContainerSpec(amSpec);
     LOG.info("=== set amSpec for appContext: " + amSpec.toString());
@@ -186,7 +186,7 @@ public class DriverClient implements AutoCloseable {
     opts.addOption(HADOOP_BINARY_PATH_OPT, true, "Path to the Hadoop binary zip.");
     opts.addOption(CONF_OPT, true, "Path to dynoyarn configuration.");
     opts.addOption(CAPACITY_SCHEDULER_CONF_OPT, true, "Path to capacity scheduler configuration.");
-    opts.addOption(HDFS_CLASSPATH_OPT, true, "Path on HDFS to jars to be localized.");
+    // opts.addOption(HDFS_CLASSPATH_OPT, true, "Path on HDFS to jars to be localized."); // not used
     CommandLine cliParser = new GnuParser().parse(opts, args, true);
     if (args.length == 0) {
       throw new IllegalArgumentException("No args specified for client to initialize");
@@ -239,9 +239,11 @@ public class DriverClient implements AutoCloseable {
 
     Map<String, LocalResource> localResources = new HashMap<>();
     Path dyarnJar = Utils.localizeLocalResource(dyarnConf, fs, dyarnJarPath, LocalResourceType.FILE, appResourcesPath, localResources);
+    LOG.info("=== localized resource to " + dyarnJar.toString());
     Path conf = Utils.localizeLocalResource(dyarnConf, fs, confPath, LocalResourceType.FILE, appResourcesPath, localResources);
     Path startScript = Utils.localizeLocalResource(dyarnConf, fs, START_SCRIPT_LOCATION, LocalResourceType.FILE, appResourcesPath, localResources);
     Path containerExecutorCfg = Utils.localizeLocalResource(dyarnConf, fs, CONTAINER_EXECUTOR_CFG, LocalResourceType.FILE, appResourcesPath, localResources);
+    LOG.info("=== localized containerExecutorCfg to " + containerExecutorCfg.toString());
     Utils.localizeLocalResource(dyarnConf, fs, DYNOYARN_SITE_XML, LocalResourceType.FILE, appResourcesPath, localResources);
     containerEnv.put(Constants.DYARN_CONF_NAME, conf.toString());
     LOG.info("=== DYARN_CONF_NAME: " + conf.toString());
@@ -258,10 +260,13 @@ public class DriverClient implements AutoCloseable {
     FileSystem localFs = FileSystem.getLocal(dyarnConf);
     Path libPath = new Path("lib");
     if (localFs.exists(libPath)) { // TODO need logs here?
+      LOG.info("=== libPath exists on localFs " + libPath.toString()); 
       for (FileStatus status : localFs.listStatus(new Path("lib"))) {
         Utils.localizeLocalResource(dyarnConf, fs, status.getPath().toString(), LocalResourceType.FILE, hdfsClasspath,
             localResources);
       }
+    } else {
+      LOG.info("=== libPath does not exist on localFs " + libPath.toString()); 
     }
     containerEnv.put("HDFS_CLASSPATH", hdfsClasspath.toString());
     LOG.info("=== hdfsClasspath " + hdfsClasspath.toString());

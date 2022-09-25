@@ -482,7 +482,7 @@ public class DriverApplicationMaster {
                 cluster = new ObjectMapper().readValue(out, ClusterInfo.class);
                 String rmHttp = cluster.getRmHost() + ":" + cluster.getRmHttpPort();
                 // amRMClient.updateTrackingUrl(rmHttp); // TODO: commenting out because throws error for Hadoop v2.9.1. should work for Hadoop v3.1.2 and up. 
-                LOG.info("Updated tracking url for fake RM to " + rmHttp); // TODO  we enver get this log 
+                LOG.info("Updated tracking url for fake RM to " + rmHttp);
                 return true;
               } catch (Exception e) {
                 LOG.info("Not able to get file: " + hdfsStoragePath);
@@ -582,6 +582,7 @@ public class DriverApplicationMaster {
       classPathEnv.append(ApplicationConstants.CLASS_PATH_SEPARATOR).append("/opt/yarn/binary/share/hadoop/common/*");
       classPathEnv.append(ApplicationConstants.CLASS_PATH_SEPARATOR).append("/opt/yarn/binary/share/hadoop/common/lib/*");
       classPathEnv.append(ApplicationConstants.CLASS_PATH_SEPARATOR).append("/opt/yarn/binary/share/hadoop/hdfs/*");
+      // classPathEnv.append(ApplicationConstants.CLASS_PATH_SEPARATOR).append("/opt/yarn/binary/share/hadoop/hdfs/lib/*");
       classPathEnv.append(ApplicationConstants.CLASS_PATH_SEPARATOR).append("/opt/yarn/binary/share/hadoop/httpfs/*");
       classPathEnv.append(ApplicationConstants.CLASS_PATH_SEPARATOR).append("/opt/yarn/binary/share/hadoop/kms/*");
       classPathEnv.append(ApplicationConstants.CLASS_PATH_SEPARATOR).append("/opt/yarn/binary/share/hadoop/mapreduce/*");
@@ -668,7 +669,9 @@ public class DriverApplicationMaster {
     Utils.localizeHDFSResource(fs, containerExecutorCfg, Constants.CONTAINER_EXECUTOR_CFG, LocalResourceType.FILE, containerResources);
 
     String hdfsClasspath = System.getenv("HDFS_CLASSPATH");
+    LOG.info("=== HDFS_CLASSPATH " + hdfsClasspath);
     for (FileStatus status : fs.listStatus(new Path(hdfsClasspath))) {
+      LOG.info("=== getContainerResources " + status.toString());
       Utils.localizeHDFSResource(fs, status.getPath().toString(), status.getPath().getName(), LocalResourceType.FILE, containerResources);
     }
 

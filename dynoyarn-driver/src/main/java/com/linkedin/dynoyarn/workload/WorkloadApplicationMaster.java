@@ -499,11 +499,12 @@ public class WorkloadApplicationMaster {
       containerShellEnv.put("CLASSPATH", classPathEnv.toString());
       LOG.info("=== putting SIMULATED_FATJAR_NAME into containerShellEnv " + System.getenv(Constants.SIMULATED_FATJAR_NAME)); 
       containerShellEnv.put(Constants.SIMULATED_FATJAR_NAME, System.getenv(Constants.SIMULATED_FATJAR_NAME));
-      LOG.info("=== putting HDFS_CLASSPATH into containerShellEnv " + System.getenv("HDFS_CLASSPATH"));
+      LOG.info("=== putting HDFS_CLASSPATH into containerShellEnv " + System.getenv(Constants.DYARN_CONF_NAME).substring(0, 50) + "lib");
       // containerShellEnv.put("HDFS_CLASSPATH", System.getenv("HDFS_CLASSPATH")); 
       // TODO: this is a hack because gives NullPointer above (why?)
-      // transform `/tmp/.dyarn/application_1662175784079_0019/dynoyarn-generator-0.0.1-all.jar` to `tmp/.dyarn/application_1662175784079_0019/lib`
-      containerShellEnv.put("HDFS_CLASSPATH", System.getenv(Constants.DYARN_CONF_NAME).substring(0, 43) + "lib");
+      // transform `/user/piper/.dyarn/application_1662175784079_0019/dynoyarn-generator-0.0.1-all.jar` 
+      //to `/user/piper/.dyarn/application_1662175784079_0019/`
+      containerShellEnv.put("HDFS_CLASSPATH", System.getenv(Constants.DYARN_CONF_NAME).substring(0, 50) + "");
       LOG.info("=== putting DYARN_CONF_NAME into containerShellEnv " +  System.getenv(Constants.DYARN_CONF_NAME));
       containerShellEnv.put(Constants.DYARN_CONF_NAME, System.getenv(Constants.DYARN_CONF_NAME)); 
       

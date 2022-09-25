@@ -136,7 +136,7 @@ public class WorkloadClient implements AutoCloseable {
     Resource capability = Resource.newInstance(amMemory, 2);
     appContext.setResource(capability);
     ContainerLaunchContext amSpec =
-        createAMContainerSpec(appId, Utils.getTokens(conf, yarnClient, false), amMemory);
+        createAMContainerSpec(appId, Utils.getTokens(conf, yarnClient, true), amMemory);
     appContext.setAMContainerSpec(amSpec);
     appContext.setApplicationType("DYNOWORKLOAD");
     String queue = conf.get(DynoYARNConfigurationKeys.WORKLOAD_QUEUE);

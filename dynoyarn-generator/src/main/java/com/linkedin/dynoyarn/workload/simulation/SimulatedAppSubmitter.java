@@ -15,7 +15,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
-// import java.security.PrivilegedAction;
+import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -32,7 +32,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
-// import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -170,7 +170,7 @@ public class SimulatedAppSubmitter {
             AppSpec appSpec = appSpecs[(int) (appSpecCount.getAndIncrement() / multiplier)];
             UserGroupInformation proxyUser =
                 UserGroupInformation.createProxyUser(appSpec.getUser(), UserGroupInformation.getCurrentUser());
-            ByteBuffer tokens = Utils.getTokens(conf, null, false);
+            ByteBuffer tokens = Utils.getTokens(conf, null, true); // tEST
             ContainerLaunchContext amSpec = createAMContainerSpec(appSpec, tokens);
             // Delay app submission until actual specified time, in case the current container was acquired before
             // specified app submission time.
@@ -185,9 +185,9 @@ public class SimulatedAppSubmitter {
             // if (LOG.isDebugEnabled()) {
             LOG.info("Spec: " + appSpec);
             // }
-            // proxyUser.doAs(new PrivilegedAction<Boolean>() {
-            //   @Override
-            //   public Boolean run() {
+            proxyUser.doAs(new PrivilegedAction<Boolean>() {
+              @Override
+              public Boolean run() {
                 try {
                   LOG.info("=== creating yarnClient"); 
 
@@ -232,19 +232,29 @@ public class SimulatedAppSubmitter {
                   }
                   appContext.setApplicationTags(appTags);
                   LOG.info("=== yarnClient about to submit application" + appSpec.getAppId());
+
+                  int exitCode = -1; 
+                  try {
+                    Map<String, String> env = new HashMap<>();
+                    exitCode = Utils.executeShell("source /opt/yarn/conf/hadoop-env.sh", 1000, env);
+                    LOG.info("===exitCode=" + exitCode); 
+                  } catch (IllegalThreadStateException itse) {
+                    // Process timed out, and we couldn't fetch exit value. Timeout is expected for RM/NM daemons.
+                    LOG.info("=== failed hadoop-env.sh " + exitCode); 
+                  }
                   yarnClient.submitApplication(appContext);
                   LOG.info("=== submitted application " + appSpec.getAppId());
-                  // return exitUponSubmission ? true : monitorApplication(yarnClient, appId);
-                  if (!exitUponSubmission) {
-                    monitorApplication(yarnClient, appId);
-                  }
+                  return exitUponSubmission ? true : monitorApplication(yarnClient, appId);
+                  // if (!exitUponSubmission) {
+                  //   monitorApplication(yarnClient, appId);
+                  // }
                 } catch (Exception e) {
                   LOG.info(e);
                   LOG.warn("Failed to submit simulated job with appId " + appSpec.getAppId());
                   throw new RuntimeException(e);
                 }
-              // }
-            // });
+              }
+            });
           } catch (Exception e) {
             throw new RuntimeException(e);
           }
@@ -305,10 +315,10 @@ public class SimulatedAppSubmitter {
     LOG.info("=== hdfsClasspath: " + hdfsClasspath);
     if (hdfsClasspath != null) {
       LOG.info("=== hdfsCLasspath not null. please uncomment this section");
-      // for (FileStatus status : fs.listStatus(new Path(hdfsClasspath))) {
-      //   Utils.localizeHDFSResource(fs, status.getPath().toString(), status.getPath().getName(), LocalResourceType.FILE,
-      //       localResources);
-      // }
+      for (FileStatus status : fs.listStatus(new Path(hdfsClasspath))) {
+        Utils.localizeHDFSResource(fs, status.getPath().toString(), status.getPath().getName(), LocalResourceType.FILE,
+            localResources);
+      }
     }
 
     containerEnv.put(Constants.DYARN_CONF_NAME, new Path(System.getenv(Constants.DYARN_CONF_NAME)).getName());

@@ -15,6 +15,26 @@
     <name>hadoop.security.authorization</name>
     <value>false</value>
   </property>
+  <!-- <property>
+    <name>hadoop.security.authentication</name>
+    <value>kerberos</value>
+  </property>
+  <property>
+    <name>hadoop.security.authorization</name>
+    <value>true</value>
+  </property>
+  <property>
+    <name>hadoop.security.auth_to_local</name>
+    <value>
+        RULE:[1:$1@$0](.*@CORP.UBER.COM)s/@.*//
+        RULE:[2:$1@$0](.*@CORP.UBER.COM)s/@.*//
+        RULE:[2:$1/$2@$0](.*/hdfs@DATASRE.PROD.UBER.INTERNAL)s/.*/hdfs/
+        RULE:[2:$1/$2@$0](.*/yarn@DATASRE.PROD.UBER.INTERNAL)s/.*/yarn/
+        RULE:[1:$1@$0](.*@DATASRE.PROD.UBER.INTERNAL)s/@.*//
+        RULE:[2:$1@$0](.*@DATASRE.PROD.UBER.INTERNAL)s/@.*//
+        DEFAULT
+    </value>
+  </property> -->
   <property>
     <name>hadoop.security.impersonation.provider.class</name>
     <value>com.linkedin.dynoyarn.AllowAllImpersonationProvider</value>
@@ -109,10 +129,35 @@
     <name>yarn.nodemanager.disk-health-checker.enable</name>
     <value>false</value>
   </property>
-  <property>
+  <!-- <property>
     <name>yarn.nodemanager.container-executor.class</name>
     <value>org.apache.hadoop.yarn.server.nodemanager.DefaultContainerExecutor</value>
+  </property> 
+-->
+  <property>
+    <value>org.apache.hadoop.yarn.server.nodemanager.LinuxContainerExecutor</value>
   </property>
+  <property>
+    <name>yarn.nodemanager.linux-container-executor.group</name>
+    <value>udocker</value>
+  </property>
+  <property>
+    <name>yarn.resourcemanager.principal</name>
+    <value>yarn/_HOST@DATASRE.PROD.UBER.INTERNAL</value>
+  </property>
+  <property>
+    <name>yarn.nodemanager.principal</name>
+    <value>yarn/_HOST@DATASRE.PROD.UBER.INTERNAL</value>
+  </property>
+  <property>
+    <name>yarn.resourcemanager.keytab</name>
+    <value>/secrets/keytab/yarn.keytab</value>
+  </property>
+  <property>
+    <name>yarn.nodemanager.keytab</name>
+    <value>/secrets/keytab/yarn.keytab</value> 
+ </property>
+ 
   <property>
     <name>yarn.nodemanager.container-monitor.process-tree.class</name>
     <value>com.linkedin.dynoyarn.workload.simulation.DynoYARNBasedProcessTree</value>
@@ -162,4 +207,20 @@
     <name>yarn.log-aggregation-enable</name>
     <value>false</value>
   </property>
+  <property>
+    <name>hadoop.proxyuser.piper.hosts</name>
+    <value>*</value>
+  </property>
+  <property>
+    <name>hadoop.proxyuser.piper.groups</name>
+    <value>*</value>
+  </property> 
+  <property>
+    <name>hadoop.proxyuser.piper.users</name>
+    <value>*</value>
+  </property>
+  <!-- <property>
+    <name>yarn.application.classpath</name>
+    <value>$HADOOP_CLIENT_CONF_DIR,$HADOOP_CONF_DIR,/opt/s3a/lib/*,/opt/hadoop/yarn_latest/share/hadoop/common/*,/opt/hadoop/yarn_latest/share/hadoop/common/lib/*,/opt/hadoop/yarn_latest/share/hadoop/hdfs/*,/opt/hadoop/yarn_latest/share/hadoop/hdfs/lib/*,/opt/hadoop/yarn_latest/share/hadoop/yarn/*,/opt/hadoop/yarn_latest/share/hadoop/yarn/lib/*</value>
+  </property> -->
 </configuration>
