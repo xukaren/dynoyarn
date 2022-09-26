@@ -477,7 +477,7 @@ public class DriverApplicationMaster {
             Utils.poll(() -> {
               FSDataInputStream inputStream = null;
               try {
-                inputStream = fs.open(hdfsStoragePath); // error 
+                inputStream = fs.open(hdfsStoragePath);
                 String out = IOUtils.toString(inputStream);
                 cluster = new ObjectMapper().readValue(out, ClusterInfo.class);
                 String rmHttp = cluster.getRmHost() + ":" + cluster.getRmHttpPort();

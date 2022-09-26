@@ -21,6 +21,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileContext;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -188,15 +189,19 @@ public class Utils {
         }
       }
     }
-    fs.setPermission(dst, new FsPermission((short) 0770));
+    fs.setPermission(dst, new FsPermission((short) 777));
+    
+    LOG.info("===  localizeLocalResource: path -> URL =" + ConverterUtils.getYarnUrlFromPath(FileContext.getFileContext().makeQualified(dst)) 
+    + ", vs. URI -> url=" + ConverterUtils.getYarnUrlFromURI(dst.toUri()));
     FileStatus scFileStatus = fs.getFileStatus(dst);
     LocalResource scRsrc =
         LocalResource.newInstance(
-            ConverterUtils.getYarnUrlFromURI(dst.toUri()),
+            // ConverterUtils.getYarnUrlFromURI(dst.toUri()),
+            ConverterUtils.getYarnUrlFromPath(FileContext.getFileContext().makeQualified(dst)),
             resourceType, LocalResourceVisibility.PRIVATE,
             scFileStatus.getLen(), scFileStatus.getModificationTime());
     localResources.put(srcFile.getName(), scRsrc);
-    LOG.info("=== dst of " + localSrcPath + " is " + dst.toString());
+    LOG.info("=== localizeLocalResource dst of " + localSrcPath + " is " + dst.toString());
     return dst;
   }
 
@@ -352,15 +357,16 @@ public class Utils {
   public static void localizeHDFSResource(FileSystem fs, String hdfsSrcPath, String dstName, LocalResourceType resourceType,
       Map<String, LocalResource> localResources) throws IOException {
     Path src = new Path(hdfsSrcPath);
+    fs.setPermission(src, new FsPermission((short) 777));
     LOG.info("=== localizeHDFSResource, hdfsSrcPath = " + hdfsSrcPath + " dstName= " + dstName);
     LOG.info(" src.toURI= " + src.toUri() + ", getYarnUrlFromURI " + ConverterUtils.getYarnUrlFromURI(src.toUri()));
-    LOG.info("getYarnUrlFromPath= " + ConverterUtils.getYarnUrlFromPath(src));
+    LOG.info("getYarnUrlFromPath= " + ConverterUtils.getYarnUrlFromPath(FileContext.getFileContext().makeQualified(src)));
     FileStatus scFileStatus = fs.getFileStatus(src);
     LocalResource scRsrc =
         LocalResource.newInstance(
-            ConverterUtils.getYarnUrlFromPath(src),
+            ConverterUtils.getYarnUrlFromPath(FileContext.getFileContext().makeQualified(src)),
             // ConverterUtils.getYarnUrlFromURI(src.toUri()),
-            resourceType, LocalResourceVisibility.PUBLIC,
+            resourceType, LocalResourceVisibility.PRIVATE,
             scFileStatus.getLen(), scFileStatus.getModificationTime());
     localResources.put(dstName, scRsrc);
   }

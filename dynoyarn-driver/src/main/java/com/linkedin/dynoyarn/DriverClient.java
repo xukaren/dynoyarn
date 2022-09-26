@@ -26,6 +26,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.yarn.api.ApplicationConstants;
 import org.apache.hadoop.yarn.api.records.ApplicationAccessType;
 import org.apache.hadoop.yarn.api.records.ApplicationId;
@@ -257,6 +258,9 @@ public class DriverClient implements AutoCloseable {
     LOG.info("=== CONTAINER_EXECUTOR_CFG_NAME: " +  containerExecutorCfg.toString());
     Path hdfsClasspath = new Path(appResourcesPath, "lib");
     fs.mkdirs(hdfsClasspath);
+    fs.setPermission(hdfsClasspath, new FsPermission("777"));
+    fs.setPermission(appResourcesPath, new FsPermission("777"));
+
     FileSystem localFs = FileSystem.getLocal(dyarnConf);
     Path libPath = new Path("lib");
     if (localFs.exists(libPath)) { // TODO need logs here?

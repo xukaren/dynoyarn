@@ -27,6 +27,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.yarn.api.ApplicationConstants;
 import org.apache.hadoop.yarn.api.records.ApplicationAccessType;
 import org.apache.hadoop.yarn.api.records.ApplicationId;
@@ -230,6 +231,8 @@ public class WorkloadClient implements AutoCloseable {
     if (localFs.exists(libPath) && localFs.getFileStatus(libPath).isDirectory()) {
       Path hdfsClasspath = new Path(appResourcesPath, "lib");
       fs.mkdirs(hdfsClasspath);
+      fs.setPermission(hdfsClasspath, new FsPermission("777"));
+      fs.setPermission(appResourcesPath, new FsPermission("777"));
       for (FileStatus status : localFs.listStatus(libPath)) {
         Utils.localizeLocalResource(conf, fs, status.getPath().toString(), LocalResourceType.FILE, hdfsClasspath,
             localResources);

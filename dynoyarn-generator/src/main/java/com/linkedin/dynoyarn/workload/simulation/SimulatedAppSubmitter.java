@@ -134,6 +134,9 @@ public class SimulatedAppSubmitter {
       }
     }
     if (System.getenv("HADOOP_CONF_DIR") != null) {
+      LOG.info("=== adding resource to conf" + new Path(System.getenv(HADOOP_CONF_DIR) + File.separatorChar + CORE_SITE_CONF)); 
+      LOG.info("=== adding resource to conf" + new Path(System.getenv(HADOOP_CONF_DIR) + File.separatorChar + HDFS_SITE_CONF)); 
+
       conf.addResource(new Path(System.getenv(HADOOP_CONF_DIR) + File.separatorChar + CORE_SITE_CONF));
       conf.addResource(new Path(System.getenv(HADOOP_CONF_DIR) + File.separatorChar + HDFS_SITE_CONF));
     }
@@ -322,9 +325,18 @@ public class SimulatedAppSubmitter {
     }
 
     containerEnv.put(Constants.DYARN_CONF_NAME, new Path(System.getenv(Constants.DYARN_CONF_NAME)).getName());
+
     containerEnv.put("CLASSPATH", "./*:$HADOOP_CONF_DIR:$HADOOP_YARN_HOME/share/hadoop/yarn/*:$HADOOP_YARN_HOME/lib/*" 
     + ":$HADOOP_YARN_HOME/share/hadoop/common/*:$HADOOP_YARN_HOME/share/hadoop/hdfs/*:$HADOOP_YARN_HOME/share/hadoop/common/lib/*"
-    + ":$HADOOP_YARN_HOME/share/hadoop/httpfs/*:"); // TODO need to add more classpaths here?
+    + ":$HADOOP_YARN_HOME/share/hadoop/httpfs/*:"
+    + ":/opt/yarn/binary/share/hadoop/common/*:"
+    + ":/opt/yarn/binary/share/hadoop/common/lib/*:"
+    + ":/opt/yarn/binary/share/hadoop/hdfs/*:"
+    + ":/opt/yarn/binary/share/hadoop/kms/*:"
+    + ":/opt/yarn/binary/share/hadoop/mapreduce/*:"
+    + ":/opt/yarn/binary/share/hadoop/spark/*:"
+    + ":/opt/yarn/binary/share/hadoop/tools/*:"
+    + ":/opt/yarn/binary/share/hadoop/yarn/*:"); // TODO need to add more classpaths here?
     containerEnv.put(Constants.IS_AM, "true");
     containerEnv.put("HDFS_CLASSPATH", System.getenv("HDFS_CLASSPATH"));
     containerEnv.put(Constants.APP_SPEC_NAME, new ObjectMapper().writeValueAsString(appSpec)
