@@ -9,7 +9,6 @@
     <value>30</value>
     <description>Number of node managers per container.</description>
   </property>
-    <!-- TODO think of better number of memory/vcores -->
   <property>
     <name>dynoyarn.nodemanager.memory</name>
     <value>10g</value>
@@ -113,7 +112,6 @@
   <property>
     <name>dynoyarn.workload.multiplier</name>
     <value>1</value>
-    <!--  TODO configure this later  -->
     <description>
       Multiplier for scaling up a workload to stress test the resource manager.
       For example, setting this to 1.5 will submit each application in the trace once, plus a

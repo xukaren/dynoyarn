@@ -25,7 +25,6 @@ import org.apache.hadoop.fs.FileContext;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.io.DataOutputBuffer;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.io.Text;
@@ -168,7 +167,7 @@ public class Utils {
   public static Path localizeLocalResource(Configuration conf, FileSystem fs, String localSrcPath, LocalResourceType resourceType,
       Path appResourcesPath, Map<String, LocalResource> localResources) throws IOException {
     
-    LOG.info("=== localizeLocalResource, localSrcPath = " + localSrcPath + " appResourcesPath = " + appResourcesPath);
+    LOG.info("=== localizeLocalResource: uploading local resource = " + localSrcPath + " to hdfs = " + appResourcesPath);
     URI srcURI;
     try {
       srcURI = new URI(localSrcPath);
@@ -189,10 +188,10 @@ public class Utils {
         }
       }
     }
-    fs.setPermission(dst, new FsPermission((short) 777));
-    
-    LOG.info("===  localizeLocalResource: path -> URL =" + ConverterUtils.getYarnUrlFromPath(FileContext.getFileContext().makeQualified(dst)) 
-    + ", vs. URI -> url=" + ConverterUtils.getYarnUrlFromURI(dst.toUri()));
+
+    LOG.info("===  localizeLocalResource " + ConverterUtils.getYarnUrlFromPath(FileContext.getFileContext().makeQualified(dst))); 
+    // This is the same as above, but doesnt have hdfs://... prefix 
+    // + ", vs. URI -> url=" + ConverterUtils.getYarnUrlFromURI(dst.toUri()));
     FileStatus scFileStatus = fs.getFileStatus(dst);
     LocalResource scRsrc =
         LocalResource.newInstance(
@@ -201,7 +200,6 @@ public class Utils {
             resourceType, LocalResourceVisibility.PRIVATE,
             scFileStatus.getLen(), scFileStatus.getModificationTime());
     localResources.put(srcFile.getName(), scRsrc);
-    LOG.info("=== localizeLocalResource dst of " + localSrcPath + " is " + dst.toString());
     return dst;
   }
 
@@ -357,10 +355,7 @@ public class Utils {
   public static void localizeHDFSResource(FileSystem fs, String hdfsSrcPath, String dstName, LocalResourceType resourceType,
       Map<String, LocalResource> localResources) throws IOException {
     Path src = new Path(hdfsSrcPath);
-    fs.setPermission(src, new FsPermission((short) 777));
-    LOG.info("=== localizeHDFSResource, hdfsSrcPath = " + hdfsSrcPath + " dstName= " + dstName);
-    LOG.info(" src.toURI= " + src.toUri() + ", getYarnUrlFromURI " + ConverterUtils.getYarnUrlFromURI(src.toUri()));
-    LOG.info("getYarnUrlFromPath= " + ConverterUtils.getYarnUrlFromPath(FileContext.getFileContext().makeQualified(src)));
+    LOG.info("=== localizeHDFSResource. localizing from hdfs  " + hdfsSrcPath + " to local  " + dstName);
     FileStatus scFileStatus = fs.getFileStatus(src);
     LocalResource scRsrc =
         LocalResource.newInstance(
