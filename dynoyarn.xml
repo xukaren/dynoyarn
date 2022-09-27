@@ -12,7 +12,7 @@
     <!-- TODO think of better number of memory/vcores -->
   <property>
     <name>dynoyarn.nodemanager.memory</name>
-    <value>1g</value>
+    <value>10g</value>
     <description>Memory size of simulated node manager containers.</description>
   </property>
   <property>
