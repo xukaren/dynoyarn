@@ -4,12 +4,12 @@
  */
 package com.linkedin.dynoyarn.workload.simulation;
 
-import com.linkedin.dynoyarn.common.ClusterInfo;
+// import com.linkedin.dynoyarn.common.ClusterInfo;
 import com.linkedin.dynoyarn.common.Constants;
 import com.linkedin.dynoyarn.common.ContainerRequest;
 import com.linkedin.dynoyarn.common.Utils;
 import java.io.IOException;
-import java.io.InputStream;
+// import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
@@ -26,12 +26,12 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.GnuParser;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.apache.commons.io.IOUtils;
+// import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
+// import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.DataOutputBuffer;
 import org.apache.hadoop.net.NetUtils;
 import org.apache.hadoop.security.Credentials;
@@ -103,7 +103,7 @@ public class SimulatedApplicationMaster {
   }
 
   public boolean init(String[] args) throws IOException {
-    LOG.info("=== SimulatedApplicationMaster");
+    LOG.info("=== SimulatedApplicationMaster init()");
     Options opts = new Options();
     opts.addOption("cluster_spec_location", true, "Path on HDFS to cluster spec information.");
 
@@ -118,11 +118,16 @@ public class SimulatedApplicationMaster {
     UserGroupInformation.setConfiguration(conf);
     fs = FileSystem.get(conf);
     String clusterSpecLocation = cliParser.getOptionValue("cluster_spec_location");
-    InputStream inputStream = fs.open(new Path(clusterSpecLocation));
-    String out = IOUtils.toString(inputStream);
-    ClusterInfo cluster = new ObjectMapper().readValue(out, ClusterInfo.class);
-    rmEndpoint = cluster.getRmHost() + ":" + cluster.getRmPort();
-    amEndpoint = cluster.getRmHost() + ":" + cluster.getRmSchedulerPort();
+    LOG.info("=== clusterSpecLocation " + clusterSpecLocation);
+    // InputStream inputStream = fs.open(new Path(clusterSpecLocation));
+    // String out = IOUtils.toString(inputStream);
+    // ClusterInfo cluster = new ObjectMapper().readValue(out, ClusterInfo.class);
+    // rmEndpoint = cluster.getRmHost() + ":" + cluster.getRmPort(); 
+    // amEndpoint = cluster.getRmHost() + ":" + cluster.getRmSchedulerPort();
+
+    // TODO hardcoded due to fs.open() trying to access local FS instead of HDFS
+    rmEndpoint = "phx5-8yv.prod.uber.internal:8032";
+    amEndpoint = "phx5-8yv.prod.uber.internal:8030";
     conf.set(YarnConfiguration.RM_ADDRESS, rmEndpoint);
     conf.set(YarnConfiguration.RM_SCHEDULER_ADDRESS, amEndpoint);
     // Set NM/RM max-wait to respective intervals, so that the underlying ipc.Client only retries once.
