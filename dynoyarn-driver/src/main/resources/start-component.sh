@@ -82,7 +82,7 @@ export YARN_LOG_DIR=${logDir}
 export HADOOP_PID_DIR=${pidDir}
 export HADOOP_CLASSPATH="$extraClasspathDir/*"
 export JMX_OPTS="-Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.port=20004"
-export YARN_OPTS="-Djava.io.tmpdir=$tmpdir $JMX_OPTS"
+export YARN_OPTS="-Xmx128g -Xms128g  -XX:+HeapDumpOnOutOfMemoryError -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+UseGCLogFileRotation -XX:NumberOfGCLogFiles=5 -XX:GCLogFileSize=100M -XX:+UseParNewGC -XX:+UseConcMarkSweepGC -XX:-CMSConcurrentMTEnabled -XX:CMSInitiatingOccupancyFraction=70 -XX:+CMSParallelRemarkEnabled -Djava.io.tmpdir=$tmpdir $JMX_OPTS"
 export HADOOP_CLIENT_OPTS="$HADOOP_CLIENT_OPTS $JAVA_HEAP_MAX -XX:ParallelGCThreads=2 -XX:CICompilerCount=2" # TODO add JMX opts
 
 echo 'HADOOP_CLIENT_OPTS'
