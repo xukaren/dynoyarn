@@ -26,6 +26,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.yarn.api.ApplicationConstants;
 import org.apache.hadoop.yarn.api.records.ApplicationAccessType;
 import org.apache.hadoop.yarn.api.records.ApplicationId;
@@ -68,7 +69,7 @@ public class DriverClient implements AutoCloseable {
   public static final String HADOOP_BINARY_PATH_OPT = "hadoop_binary_path";
   public static final String CONF_OPT = "conf";
   public static final String CAPACITY_SCHEDULER_CONF_OPT = "capacity_scheduler_conf";
-  public static final String HDFS_CLASSPATH_OPT = "hdfs_classpath";
+  public static final String HDFS_CLASSPATH_OPT = "hdfs_classpath"; // not used 
 
   private YarnClient yarnClient;
   private Configuration dyarnConf;
@@ -170,7 +171,7 @@ public class DriverClient implements AutoCloseable {
     opts.addOption(HADOOP_BINARY_PATH_OPT, true, "Path to the Hadoop binary zip.");
     opts.addOption(CONF_OPT, true, "Path to dynoyarn configuration.");
     opts.addOption(CAPACITY_SCHEDULER_CONF_OPT, true, "Path to capacity scheduler configuration.");
-    opts.addOption(HDFS_CLASSPATH_OPT, true, "Path on HDFS to jars to be localized.");
+    opts.addOption(HDFS_CLASSPATH_OPT, true, "Path on HDFS to jars to be localized."); // not used
     CommandLine cliParser = new GnuParser().parse(opts, args, true);
     if (args.length == 0) {
       throw new IllegalArgumentException("No args specified for client to initialize");
@@ -218,6 +219,10 @@ public class DriverClient implements AutoCloseable {
     containerEnv.put(Constants.CONTAINER_EXECUTOR_CFG_NAME, containerExecutorCfg.toString());
     Path hdfsClasspath = new Path(appResourcesPath, "lib");
     fs.mkdirs(hdfsClasspath);
+    // TODO not sure if this is necessary
+    fs.setPermission(hdfsClasspath, new FsPermission("777"));
+    fs.setPermission(appResourcesPath, new FsPermission("777"));
+
     FileSystem localFs = FileSystem.getLocal(dyarnConf);
     Path libPath = new Path("lib");
     if (localFs.exists(libPath)) {
@@ -236,6 +241,17 @@ public class DriverClient implements AutoCloseable {
       classPathEnv.append(ApplicationConstants.CLASS_PATH_SEPARATOR);
       classPathEnv.append(c.trim());
     }
+    classPathEnv.append(ApplicationConstants.CLASS_PATH_SEPARATOR).append("./log4j.properties");
+    classPathEnv.append(ApplicationConstants.CLASS_PATH_SEPARATOR).append("/opt/yarn/binary/share/hadoop/common/*");
+    classPathEnv.append(ApplicationConstants.CLASS_PATH_SEPARATOR).append("/opt/yarn/binary/share/hadoop/common/lib/*");
+    classPathEnv.append(ApplicationConstants.CLASS_PATH_SEPARATOR).append("/opt/yarn/binary/share/hadoop/hdfs/*");
+    classPathEnv.append(ApplicationConstants.CLASS_PATH_SEPARATOR).append("/opt/yarn/binary/share/hadoop/httpfs/*");
+    classPathEnv.append(ApplicationConstants.CLASS_PATH_SEPARATOR).append("/opt/yarn/binary/share/hadoop/kms/*");
+    classPathEnv.append(ApplicationConstants.CLASS_PATH_SEPARATOR).append("/opt/yarn/binary/share/hadoop/mapreduce/*");
+    classPathEnv.append(ApplicationConstants.CLASS_PATH_SEPARATOR).append("/opt/yarn/binary/share/hadoop/spark/*"); // not sure if needed
+    classPathEnv.append(ApplicationConstants.CLASS_PATH_SEPARATOR).append("/opt/yarn/binary/share/hadoop/tools/*");
+    classPathEnv.append(ApplicationConstants.CLASS_PATH_SEPARATOR).append("/opt/yarn/binary/share/hadoop/yarn/*");
+
     containerEnv.put("CLASSPATH", classPathEnv.toString());
 
     // Set logs to be readable by everyone. Set app to be modifiable only by app owner.

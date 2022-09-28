@@ -8,6 +8,8 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.authorize.ImpersonationProvider;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * An impersonation provider which allows all impersonation. This is so the
@@ -15,15 +17,17 @@ import org.apache.hadoop.security.authorize.ImpersonationProvider;
  * workload spec to submit apps to the fake RM as these users.
  */
 public class AllowAllImpersonationProvider implements ImpersonationProvider {
+  public static final Log LOG = LogFactory.getLog(AllowAllImpersonationProvider.class);
 
   @Override
   public void init(String configurationPrefix) {
+    LOG.info("AllowAllImpersonationProvider init()");
 
   }
 
   @Override
   public void authorize(UserGroupInformation user, String remoteAddress) {
-
+    LOG.info("AllowAllImpersonationProvider authorize() remoteaddress " + remoteAddress);
   }
 
   @Override

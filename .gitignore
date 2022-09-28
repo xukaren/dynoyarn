@@ -27,3 +27,7 @@ dependency-reduced-pom.xml
 log/
 out/
 target
+bin/
+*azkaban
+scripts/
+*/.hadoopValidatorProperties

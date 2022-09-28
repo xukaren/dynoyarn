@@ -27,6 +27,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.yarn.api.ApplicationConstants;
 import org.apache.hadoop.yarn.api.records.ApplicationAccessType;
 import org.apache.hadoop.yarn.api.records.ApplicationId;
@@ -227,6 +228,9 @@ public class WorkloadClient implements AutoCloseable {
     if (localFs.exists(libPath) && localFs.getFileStatus(libPath).isDirectory()) {
       Path hdfsClasspath = new Path(appResourcesPath, "lib");
       fs.mkdirs(hdfsClasspath);
+      // TODO not sure if this does anything
+      fs.setPermission(hdfsClasspath, new FsPermission("777"));
+      fs.setPermission(appResourcesPath, new FsPermission("777"));
       for (FileStatus status : localFs.listStatus(libPath)) {
         Utils.localizeLocalResource(conf, fs, status.getPath().toString(), LocalResourceType.FILE, hdfsClasspath,
             localResources);
@@ -242,6 +246,16 @@ public class WorkloadClient implements AutoCloseable {
       classPathEnv.append(ApplicationConstants.CLASS_PATH_SEPARATOR);
       classPathEnv.append(c.trim());
     }
+    classPathEnv.append(ApplicationConstants.CLASS_PATH_SEPARATOR).append("./log4j.properties");
+    classPathEnv.append(ApplicationConstants.CLASS_PATH_SEPARATOR).append("/opt/yarn/binary/share/hadoop/common/*");
+    classPathEnv.append(ApplicationConstants.CLASS_PATH_SEPARATOR).append("/opt/yarn/binary/share/hadoop/common/lib/*");
+    classPathEnv.append(ApplicationConstants.CLASS_PATH_SEPARATOR).append("/opt/yarn/binary/share/hadoop/hdfs/*");
+    classPathEnv.append(ApplicationConstants.CLASS_PATH_SEPARATOR).append("/opt/yarn/binary/share/hadoop/httpfs/*");
+    classPathEnv.append(ApplicationConstants.CLASS_PATH_SEPARATOR).append("/opt/yarn/binary/share/hadoop/kms/*");
+    classPathEnv.append(ApplicationConstants.CLASS_PATH_SEPARATOR).append("/opt/yarn/binary/share/hadoop/mapreduce/*");
+    classPathEnv.append(ApplicationConstants.CLASS_PATH_SEPARATOR).append("/opt/yarn/binary/share/hadoop/spark/*"); // not sure if needed
+    classPathEnv.append(ApplicationConstants.CLASS_PATH_SEPARATOR).append("/opt/yarn/binary/share/hadoop/tools/*");
+    classPathEnv.append(ApplicationConstants.CLASS_PATH_SEPARATOR).append("/opt/yarn/binary/share/hadoop/yarn/*");
     containerEnv.put("CLASSPATH", classPathEnv.toString());
 
     // Set logs to be readable by everyone. Set app to be modifiable only by app owner.

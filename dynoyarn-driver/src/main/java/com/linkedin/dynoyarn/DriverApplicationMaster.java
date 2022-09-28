@@ -234,7 +234,7 @@ public class DriverApplicationMaster {
         for (int i = idx; i < labelToCounts.get(label.getName()) + idx; i++) {
           NodeReport nodeReport = nodeReports.get(i);
           nodeToLabelsMapping.put(nodeReport.getNodeId(), Collections.<String>singleton(label.getName()));
-          LOG.debug("Added label " + label + " to node " + nodeReport.getNodeId());
+          LOG.info("Added label " + label + " to node " + nodeReport.getNodeId());
         }
         idx += labelToCounts.get(label.getName());
       }
@@ -441,11 +441,12 @@ public class DriverApplicationMaster {
                 String out = IOUtils.toString(inputStream);
                 cluster = new ObjectMapper().readValue(out, ClusterInfo.class);
                 String rmHttp = cluster.getRmHost() + ":" + cluster.getRmHttpPort();
-                amRMClient.updateTrackingUrl(rmHttp);
+                // amRMClient.updateTrackingUrl(rmHttp); // TODO: commenting out because throws error for Hadoop v2.9.1. should work for Hadoop v3.1.2 and up.
                 LOG.info("Updated tracking url for fake RM to " + rmHttp);
                 return true;
               } catch (Exception e) {
                 LOG.info("Not able to get file: " + hdfsStoragePath);
+                LOG.info(e);
                 return false;
               } finally {
                 if (inputStream != null) {
@@ -532,6 +533,18 @@ public class DriverApplicationMaster {
         classPathEnv.append(ApplicationConstants.CLASS_PATH_SEPARATOR);
         classPathEnv.append(c.trim());
       }
+      classPathEnv.append(ApplicationConstants.CLASS_PATH_SEPARATOR).append("./log4j.properties");
+      classPathEnv.append(ApplicationConstants.CLASS_PATH_SEPARATOR).append("/opt/yarn/binary/share/hadoop/common/*");
+      classPathEnv.append(ApplicationConstants.CLASS_PATH_SEPARATOR).append("/opt/yarn/binary/share/hadoop/common/lib/*");
+      classPathEnv.append(ApplicationConstants.CLASS_PATH_SEPARATOR).append("/opt/yarn/binary/share/hadoop/hdfs/*");
+      // classPathEnv.append(ApplicationConstants.CLASS_PATH_SEPARATOR).append("/opt/yarn/binary/share/hadoop/hdfs/lib/*");
+      classPathEnv.append(ApplicationConstants.CLASS_PATH_SEPARATOR).append("/opt/yarn/binary/share/hadoop/httpfs/*");
+      classPathEnv.append(ApplicationConstants.CLASS_PATH_SEPARATOR).append("/opt/yarn/binary/share/hadoop/kms/*");
+      classPathEnv.append(ApplicationConstants.CLASS_PATH_SEPARATOR).append("/opt/yarn/binary/share/hadoop/mapreduce/*");
+      classPathEnv.append(ApplicationConstants.CLASS_PATH_SEPARATOR).append("/opt/yarn/binary/share/hadoop/spark/*"); // not sure if needed
+      classPathEnv.append(ApplicationConstants.CLASS_PATH_SEPARATOR).append("/opt/yarn/binary/share/hadoop/tools/*");
+      classPathEnv.append(ApplicationConstants.CLASS_PATH_SEPARATOR).append("/opt/yarn/binary/share/hadoop/yarn/*");
+
       containerShellEnv.put("CLASSPATH", classPathEnv.toString());
       containerShellEnv.put(Constants.COMPONENT_NAME, component.toString());
       containerShellEnv.put(ApplicationConstants.APPLICATION_WEB_PROXY_BASE_ENV,

@@ -166,7 +166,7 @@ public class SimulatedAppSubmitter {
             AppSpec appSpec = appSpecs[(int) (appSpecCount.getAndIncrement() / multiplier)];
             UserGroupInformation proxyUser =
                 UserGroupInformation.createProxyUser(appSpec.getUser(), UserGroupInformation.getCurrentUser());
-            ByteBuffer tokens = Utils.getTokens(conf, null, false);
+            ByteBuffer tokens = Utils.getTokens(conf, null, true); // TODO test is necessary
             ContainerLaunchContext amSpec = createAMContainerSpec(appSpec, tokens);
             // Delay app submission until actual specified time, in case the current container was acquired before
             // specified app submission time.
@@ -174,13 +174,13 @@ public class SimulatedAppSubmitter {
             long currentTime = System.currentTimeMillis();
             if (actualSubmissionTime > currentTime) {
               long sleepTime = actualSubmissionTime - currentTime;
-              LOG.debug("Sleeping for " + sleepTime + "ms");
+              LOG.info("Sleeping for " + sleepTime + "ms");
               Thread.sleep(sleepTime);
             }
             LOG.info("Submitting app " + appSpec.getAppId() + " with submit time " + appSpec.getSubmitTime());
-            if (LOG.isDebugEnabled()) {
-              LOG.debug("Spec: " + appSpec);
-            }
+            // if (LOG.isDebugEnabled()) {
+            LOG.info("Spec: " + appSpec);
+            // }
             proxyUser.doAs(new PrivilegedAction<Boolean>() {
               @Override
               public Boolean run() {
@@ -209,6 +209,16 @@ public class SimulatedAppSubmitter {
                     appTags.add("cluster:" + appSpec.getNodeLabel());
                   }
                   appContext.setApplicationTags(appTags);
+                  
+                  /*
+                  int exitCode = -1; 
+                  try {
+                    Map<String, String> env = new HashMap<>();
+                    exitCode = Utils.executeShell("source /opt/yarn/conf/hadoop-env.sh", 1000, env);
+                                      } catch (IllegalThreadStateException itse) {
+                    // Process timed out, and we couldn't fetch exit value. Timeout is expected for RM/NM daemons.
+                                      }
+                  */
                   yarnClient.submitApplication(appContext);
 
                   return exitUponSubmission ? true : monitorApplication(yarnClient, appId);
@@ -279,7 +289,17 @@ public class SimulatedAppSubmitter {
     }
 
     containerEnv.put(Constants.DYARN_CONF_NAME, new Path(System.getenv(Constants.DYARN_CONF_NAME)).getName());
-    containerEnv.put("CLASSPATH", "./*:$HADOOP_CONF_DIR:$HADOOP_YARN_HOME/share/hadoop/yarn/*:$HADOOP_YARN_HOME/lib/*");
+    containerEnv.put("CLASSPATH", "./*:$HADOOP_CONF_DIR:$HADOOP_YARN_HOME/share/hadoop/yarn/*:$HADOOP_YARN_HOME/lib/*" 
+    + ":$HADOOP_YARN_HOME/share/hadoop/common/*:$HADOOP_YARN_HOME/share/hadoop/hdfs/*:$HADOOP_YARN_HOME/share/hadoop/common/lib/*"
+    + ":$HADOOP_YARN_HOME/share/hadoop/httpfs/*:"
+    + ":/opt/yarn/binary/share/hadoop/common/*:"
+    + ":/opt/yarn/binary/share/hadoop/common/lib/*:"
+    + ":/opt/yarn/binary/share/hadoop/hdfs/*:"
+    + ":/opt/yarn/binary/share/hadoop/kms/*:"
+    + ":/opt/yarn/binary/share/hadoop/mapreduce/*:"
+    + ":/opt/yarn/binary/share/hadoop/spark/*:"
+    + ":/opt/yarn/binary/share/hadoop/tools/*:"
+    + ":/opt/yarn/binary/share/hadoop/yarn/*:"); // TODO whether classpaths necessary here
     containerEnv.put(Constants.IS_AM, "true");
     containerEnv.put("HDFS_CLASSPATH", System.getenv("HDFS_CLASSPATH"));
     containerEnv.put(Constants.APP_SPEC_NAME, new ObjectMapper().writeValueAsString(appSpec)

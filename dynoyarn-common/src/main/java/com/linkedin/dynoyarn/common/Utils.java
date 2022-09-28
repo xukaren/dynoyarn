@@ -21,6 +21,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileContext;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -190,7 +191,8 @@ public class Utils {
     FileStatus scFileStatus = fs.getFileStatus(dst);
     LocalResource scRsrc =
         LocalResource.newInstance(
-            ConverterUtils.getYarnUrlFromURI(dst.toUri()),
+            // ConverterUtils.getYarnUrlFromURI(dst.toUri()),
+            ConverterUtils.getYarnUrlFromPath(FileContext.getFileContext().makeQualified(dst)),
             resourceType, LocalResourceVisibility.PRIVATE,
             scFileStatus.getLen(), scFileStatus.getModificationTime());
     localResources.put(srcFile.getName(), scRsrc);
@@ -348,7 +350,8 @@ public class Utils {
     FileStatus scFileStatus = fs.getFileStatus(src);
     LocalResource scRsrc =
         LocalResource.newInstance(
-            ConverterUtils.getYarnUrlFromURI(src.toUri()),
+            ConverterUtils.getYarnUrlFromPath(FileContext.getFileContext().makeQualified(src)),
+            // ConverterUtils.getYarnUrlFromURI(src.toUri()),
             resourceType, LocalResourceVisibility.PRIVATE,
             scFileStatus.getLen(), scFileStatus.getModificationTime());
     localResources.put(dstName, scRsrc);

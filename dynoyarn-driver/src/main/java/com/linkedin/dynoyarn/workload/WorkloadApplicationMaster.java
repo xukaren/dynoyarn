@@ -465,9 +465,24 @@ public class WorkloadApplicationMaster {
         classPathEnv.append(ApplicationConstants.CLASS_PATH_SEPARATOR);
         classPathEnv.append(c.trim());
       }
+      classPathEnv.append(ApplicationConstants.CLASS_PATH_SEPARATOR).append("./log4j.properties");
+      classPathEnv.append(ApplicationConstants.CLASS_PATH_SEPARATOR).append("/opt/yarn/binary/share/hadoop/common/*");
+      classPathEnv.append(ApplicationConstants.CLASS_PATH_SEPARATOR).append("/opt/yarn/binary/share/hadoop/common/lib/*");
+      classPathEnv.append(ApplicationConstants.CLASS_PATH_SEPARATOR).append("/opt/yarn/binary/share/hadoop/hdfs/*");
+      classPathEnv.append(ApplicationConstants.CLASS_PATH_SEPARATOR).append("/opt/yarn/binary/share/hadoop/httpfs/*");
+      classPathEnv.append(ApplicationConstants.CLASS_PATH_SEPARATOR).append("/opt/yarn/binary/share/hadoop/kms/*");
+      classPathEnv.append(ApplicationConstants.CLASS_PATH_SEPARATOR).append("/opt/yarn/binary/share/hadoop/mapreduce/*");
+      classPathEnv.append(ApplicationConstants.CLASS_PATH_SEPARATOR).append("/opt/yarn/binary/share/hadoop/spark/*"); // not sure if needed
+      classPathEnv.append(ApplicationConstants.CLASS_PATH_SEPARATOR).append("/opt/yarn/binary/share/hadoop/tools/*");
+      classPathEnv.append(ApplicationConstants.CLASS_PATH_SEPARATOR).append("/opt/yarn/binary/share/hadoop/yarn/*");
+
       containerShellEnv.put("CLASSPATH", classPathEnv.toString());
       containerShellEnv.put(Constants.SIMULATED_FATJAR_NAME, System.getenv(Constants.SIMULATED_FATJAR_NAME));
-      containerShellEnv.put("HDFS_CLASSPATH", System.getenv("HDFS_CLASSPATH"));
+      // containerShellEnv.put("HDFS_CLASSPATH", System.getenv("HDFS_CLASSPATH"));
+      // TODO: this is a hack because gives NullPointer above (why?)
+      // transform `/user/piper/.dyarn/application_1662175784079_0019/dynoyarn-generator-0.0.1-all.jar` 
+      //to `/user/piper/.dyarn/application_1662175784079_0019/`
+      containerShellEnv.put("HDFS_CLASSPATH", System.getenv(Constants.DYARN_CONF_NAME).substring(0, 50) + "");
       containerShellEnv.put(Constants.DYARN_CONF_NAME, System.getenv(Constants.DYARN_CONF_NAME));
       try (PrintWriter out = new PrintWriter(Constants.SPEC_FILE, "UTF-8")) {
         String spec = new ObjectMapper().writeValueAsString(containerAppSpecs)

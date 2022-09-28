@@ -4,7 +4,7 @@
  */
 rootProject.name = 'dynoyarn'
 
-def modules = ['dynoyarn-azkaban', 'dynoyarn-common', 'dynoyarn-driver', 'dynoyarn-generator']
+def modules = ['dynoyarn-common', 'dynoyarn-driver', 'dynoyarn-generator']
 
 modules.each { module ->
   if (!file(module).directory) {

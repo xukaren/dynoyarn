@@ -40,7 +40,7 @@ public class DynoYARNContainerExecutor extends DefaultContainerExecutor {
     Map<String, String> containerEnv = container.getLaunchContext().getEnvironment();
     ContainerId cId = container.getContainerId();
     cIdToExecutor.put(cId, containerEnv.containsKey(Constants.IS_AM));
-    LOG.debug("Starting container " + cId + " with pid " + lastPID + " with utilization "
+    LOG.info("Starting container " + cId + " with pid " + lastPID + " with utilization "
         + containerEnv.get(Constants.CONTAINER_UTILIZATION));
     if (!containerEnv.containsKey(Constants.IS_AM)) {
       try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(String.valueOf(lastPID)),

@@ -63,8 +63,9 @@ cp *.jar $extraClasspathDir
 
 # This is where libleveldbjni is written (per-NM). Write it to a larger partition
 # instead of /tmp
-tmpdir="/grid/a/tmp/hadoop-`whoami`"
-mkdir $tmpdir
+# tmpdir="/grid/a/tmp/hadoop-`whoami`"
+tmpdir="/tmp"   # just use normal /tmp so that the simulated RM UI can find the path
+mkdir $tmpdir # maybe `mkdir -p $tmpdir`
 
 # Change environment variables for the Hadoop process
 export HADOOP_HOME="$hadoopHome"
@@ -80,7 +81,8 @@ export HADOOP_LOG_DIR=${logDir}
 export YARN_LOG_DIR=${logDir}
 export HADOOP_PID_DIR=${pidDir}
 export HADOOP_CLASSPATH="$extraClasspathDir/*"
-export YARN_OPTS="-Djava.io.tmpdir=$tmpdir"
+export JMX_OPTS="-Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.port=20004"
+export YARN_OPTS="-Xmx128g -Xms128g  -XX:+HeapDumpOnOutOfMemoryError -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+UseGCLogFileRotation -XX:NumberOfGCLogFiles=5 -XX:GCLogFileSize=100M -XX:+UseParNewGC -XX:+UseConcMarkSweepGC -XX:-CMSConcurrentMTEnabled -XX:CMSInitiatingOccupancyFraction=70 -XX:+CMSParallelRemarkEnabled -Djava.io.tmpdir=$tmpdir $JMX_OPTS"
 export HADOOP_CLIENT_OPTS="$HADOOP_CLIENT_OPTS $JAVA_HEAP_MAX -XX:ParallelGCThreads=2 -XX:CICompilerCount=2"
 
 export HADOOP_PREFIX="$hadoopHome"
