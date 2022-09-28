@@ -82,7 +82,6 @@ public class DriverClient implements AutoCloseable {
   private Path appResourcesPath;
 
   public static void main(String[] args) {
-    LOG.info("=== DriverClient main() ");
     int exitCode = 0;
     try (DriverClient client = new DriverClient()) {
       boolean sanityCheck = client.init(args);
@@ -99,7 +98,6 @@ public class DriverClient implements AutoCloseable {
 
   @VisibleForTesting
   public int start() {
-    LOG.info("=== start()");
 
     boolean result = true;
     try {
@@ -126,12 +124,10 @@ public class DriverClient implements AutoCloseable {
 
   public DriverClient() {
     this(new Configuration(true));
-    LOG.info("=== DriverClient");
 
   }
 
   public DriverClient(Configuration conf) {
-    LOG.info("=== DriverClient(Configuration conf)");
     dyarnConf = conf;
   }
 
@@ -140,29 +136,19 @@ public class DriverClient implements AutoCloseable {
     // Upload dynoyarn jar.
     // dyarnJarPath = new File(DriverClient.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getPath();
     dyarnJarPath = new File(MiniYARNCluster.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getPath();
-    LOG.info("=== dyarnJarPath " + dyarnJarPath);
     yarnClient.start();
-    LOG.info("=== yarnClient started");
     YarnClientApplication app = yarnClient.createApplication();
-    LOG.info("=== yarnClient created Application");
     ApplicationSubmissionContext appContext = app.getApplicationSubmissionContext();
-    LOG.info("=== got applicationSubmissionContext: " + appContext.toString()); 
     ApplicationId appId = appContext.getApplicationId();
     Resource capability = Resource.newInstance(2048, 2);
-    LOG.info("=== got capability : " + capability.getMemorySize() + " " + capability.toString()); 
     appContext.setResource(capability);
-    LOG.info("=== set resources for appContext: " + capability.getMemorySize() + " " + capability.toString()); 
-    LOG.info("=== tokens " + Utils.getTokens(dyarnConf, yarnClient, true).toString()); // may not print properly
     ContainerLaunchContext amSpec = createAMContainerSpec(appId, Utils.getTokens(dyarnConf, yarnClient, true));
-    LOG.info("=== created AMContainerSpec : " + capability.getMemorySize() + " " + capability.toString()); 
     appContext.setAMContainerSpec(amSpec);
-    LOG.info("=== set amSpec for appContext: " + amSpec.toString());
     String nodeLabel = dyarnConf.get(DynoYARNConfigurationKeys.APPLICATION_NODE_LABEL);
     if (nodeLabel != null) {
       appContext.setNodeLabelExpression(nodeLabel);
     }
     String queue = dyarnConf.get(DynoYARNConfigurationKeys.DRIVER_QUEUE);
-    LOG.info("=== queue" + queue);
     if (queue != null) {
       appContext.setQueue(queue);
     }
@@ -182,7 +168,6 @@ public class DriverClient implements AutoCloseable {
   }
 
   public boolean init(String[] args) throws IOException, ParseException {
-    LOG.info("=== init() ");
     Options opts = new Options();
     opts.addOption(HADOOP_BINARY_PATH_OPT, true, "Path to the Hadoop binary zip.");
     opts.addOption(CONF_OPT, true, "Path to dynoyarn configuration.");
@@ -193,44 +178,29 @@ public class DriverClient implements AutoCloseable {
       throw new IllegalArgumentException("No args specified for client to initialize");
     }
     hadoopBinZipPath = cliParser.getOptionValue(HADOOP_BINARY_PATH_OPT);
-    LOG.info("=== hadoopBinZipPath " + hadoopBinZipPath + " "  + HADOOP_BINARY_PATH_OPT);
     confPath = cliParser.getOptionValue(CONF_OPT);
-    LOG.info("=== confPath " + CONF_OPT); 
     capacitySchedulerConfPath =
         cliParser.getOptionValue(CAPACITY_SCHEDULER_CONF_OPT, Constants.CAPACITY_SCHEDULER_XML);
-        LOG.info("=== confPath " + CAPACITY_SCHEDULER_CONF_OPT + " " + Constants.CAPACITY_SCHEDULER_XML); 
     if (confPath != null) {
       dyarnConf.addResource(new Path(confPath));
-      LOG.info("=== confPath not null. added Resource to dyarnConf " + confPath); 
     }
-    LOG.info("=== confPath: " + confPath); 
     fs = FileSystem.get(dyarnConf);
-    LOG.info("=== dyarnConf fs " + fs.getUri());
     createYarnClient();
-    LOG.info("=== created YarnClient");
-    LOG.info("=== done init() method ");
     return true;
   }
 
   private void createYarnClient() {
-    LOG.info("=== createYarnClient()");
     if (System.getenv("HADOOP_CONF_DIR") != null) {
-      LOG.info("=== HADOOP_CONF_DIR not null ");
 
-      LOG.info("=== HADOOP_CONF_DIR " + HADOOP_CONF_DIR + " CORE_SITE_CONF " + CORE_SITE_CONF + " HDFS_SITE_CONF " + HDFS_SITE_CONF);
       dyarnConf.addResource(new Path(System.getenv(HADOOP_CONF_DIR) + File.separatorChar + CORE_SITE_CONF));
-      LOG.info("=== added new Resource to dyarnConf : " + new Path(System.getenv(HADOOP_CONF_DIR) + File.separatorChar + CORE_SITE_CONF).toString());
       dyarnConf.addResource(new Path(System.getenv(HADOOP_CONF_DIR) + File.separatorChar + HDFS_SITE_CONF));
-      LOG.info("=== added new Resource to dyarnConf : " + new Path(System.getenv(HADOOP_CONF_DIR) + File.separatorChar + HDFS_SITE_CONF).toString());
     }
     yarnClient = YarnClient.createYarnClient();
     LOG.info(" finished YarnClient.createYarnClient() "); 
     yarnClient.init(dyarnConf);
-    LOG.info("=== yarnClient initialized with dyarnConf");
   }
 
   private ContainerLaunchContext createAMContainerSpec(ApplicationId appId, ByteBuffer tokens) throws IOException {
-    LOG.info("=== createAMContainerSpec");
     ContainerLaunchContext amContainer = Records.newRecord(ContainerLaunchContext.class);
 
     Map<String, String> containerEnv = new HashMap<>();
@@ -240,22 +210,15 @@ public class DriverClient implements AutoCloseable {
 
     Map<String, LocalResource> localResources = new HashMap<>();
     Path dyarnJar = Utils.localizeLocalResource(dyarnConf, fs, dyarnJarPath, LocalResourceType.FILE, appResourcesPath, localResources);
-    LOG.info("=== localized resource to " + dyarnJar.toString());
     Path conf = Utils.localizeLocalResource(dyarnConf, fs, confPath, LocalResourceType.FILE, appResourcesPath, localResources);
     Path startScript = Utils.localizeLocalResource(dyarnConf, fs, START_SCRIPT_LOCATION, LocalResourceType.FILE, appResourcesPath, localResources);
     Path containerExecutorCfg = Utils.localizeLocalResource(dyarnConf, fs, CONTAINER_EXECUTOR_CFG, LocalResourceType.FILE, appResourcesPath, localResources);
-    LOG.info("=== localized containerExecutorCfg to " + containerExecutorCfg.toString());
     Utils.localizeLocalResource(dyarnConf, fs, DYNOYARN_SITE_XML, LocalResourceType.FILE, appResourcesPath, localResources);
     containerEnv.put(Constants.DYARN_CONF_NAME, conf.toString());
-    LOG.info("=== DYARN_CONF_NAME: " + conf.toString());
     containerEnv.put(Constants.DYARN_JAR_NAME, dyarnJar.toString());
-    LOG.info("=== DYARN_JAR_NAME: " + dyarnJar.toString());
     containerEnv.put(Constants.DYARN_START_SCRIPT_NAME, startScript.toString());
-    LOG.info("=== DYARN_START_SCRIPT_NAME: " + startScript.toString());
     containerEnv.put(Constants.CAPACITY_SCHEDULER_NAME, capacitySchedulerConfPath);
-    LOG.info("=== CAPACITY_SCHEDULER_NAME: " +  capacitySchedulerConfPath);
     containerEnv.put(Constants.CONTAINER_EXECUTOR_CFG_NAME, containerExecutorCfg.toString());
-    LOG.info("=== CONTAINER_EXECUTOR_CFG_NAME: " +  containerExecutorCfg.toString());
     Path hdfsClasspath = new Path(appResourcesPath, "lib");
     fs.mkdirs(hdfsClasspath);
     fs.setPermission(hdfsClasspath, new FsPermission("777"));
@@ -264,16 +227,13 @@ public class DriverClient implements AutoCloseable {
     FileSystem localFs = FileSystem.getLocal(dyarnConf);
     Path libPath = new Path("lib");
     if (localFs.exists(libPath)) { // TODO need logs here?
-      LOG.info("=== libPath exists on localFs " + libPath.toString()); 
       for (FileStatus status : localFs.listStatus(new Path("lib"))) {
         Utils.localizeLocalResource(dyarnConf, fs, status.getPath().toString(), LocalResourceType.FILE, hdfsClasspath,
             localResources);
       }
     } else {
-      LOG.info("=== libPath does not exist on localFs " + libPath.toString()); 
     }
     containerEnv.put("HDFS_CLASSPATH", hdfsClasspath.toString());
-    LOG.info("=== hdfsClasspath " + hdfsClasspath.toString());
    // TODO need logs here?
     StringBuilder classPathEnv = new StringBuilder(ApplicationConstants.Environment.CLASSPATH.$$())
         .append(ApplicationConstants.CLASS_PATH_SEPARATOR).append("./*");
@@ -296,7 +256,6 @@ public class DriverClient implements AutoCloseable {
 
     containerEnv.put("CLASSPATH", classPathEnv.toString());
 
-    LOG.info("=== CLASSPATH: " + classPathEnv.toString()); 
 
     // Set logs to be readable by everyone. Set app to be modifiable only by app owner.
     Map<ApplicationAccessType, String> acls = new HashMap<>(2);
@@ -331,18 +290,13 @@ public class DriverClient implements AutoCloseable {
     if (tokens != null) {
       LOG.info("Adding tokens!");
       amContainer.setTokens(tokens);
-      LOG.info("=== tokens " + tokens.toString()); // TODO might not print properly
     }
     amContainer.setLocalResources(localResources);
-    LOG.info("=== am container set local resources " + localResources.toString());
     amContainer.setEnvironment(containerEnv);
-    LOG.info("=== am container set containerEnv " + containerEnv.toString());
-    LOG.info("=== finished createAMContainerSpec");
     return amContainer;
   }
 
   public YarnClient getYarnClient() {
-    LOG.info("=== getYarnClient()"); 
     return this.yarnClient;
   }
 

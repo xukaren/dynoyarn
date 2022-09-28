@@ -167,7 +167,6 @@ public class Utils {
   public static Path localizeLocalResource(Configuration conf, FileSystem fs, String localSrcPath, LocalResourceType resourceType,
       Path appResourcesPath, Map<String, LocalResource> localResources) throws IOException {
     
-    LOG.info("=== localizeLocalResource: uploading local resource = " + localSrcPath + " to hdfs = " + appResourcesPath);
     URI srcURI;
     try {
       srcURI = new URI(localSrcPath);
@@ -189,7 +188,6 @@ public class Utils {
       }
     }
 
-    LOG.info("===  localizeLocalResource " + ConverterUtils.getYarnUrlFromPath(FileContext.getFileContext().makeQualified(dst))); 
     // This is the same as above, but doesnt have hdfs://... prefix 
     // + ", vs. URI -> url=" + ConverterUtils.getYarnUrlFromURI(dst.toUri()));
     FileStatus scFileStatus = fs.getFileStatus(dst);
@@ -242,7 +240,6 @@ public class Utils {
    * @return {@link org.apache.hadoop.yarn.client.api.AMRMClient.ContainerRequest} object
    */
   public static AMRMClient.ContainerRequest setupContainerRequest(ContainerRequest request) {
-    LOG.info("=== setupContainerRequests");
     Resource capability = Resource.newInstance((int) request.getMemory(), request.getVcores());
     AMRMClient.ContainerRequest containerRequest = AMRMClient.ContainerRequest.newBuilder()
         .capability(capability)
@@ -259,10 +256,8 @@ public class Utils {
    * @param request {@link com.linkedin.dynoyarn.common.ContaineRequest} object.
    */
   public static void scheduleTask(AMRMClientAsync amRMClient, ContainerRequest request) {
-    LOG.info("=== scheduleTask "); 
     AMRMClient.ContainerRequest containerAsk = setupContainerRequest(request);
     for (int i = 0; i < request.getNumInstances(); i++) {
-      LOG.info("=== containerAsk " + containerAsk.toString());
       amRMClient.addContainerRequest(containerAsk);
     }
   }
@@ -281,7 +276,6 @@ public class Utils {
       throws IOException, URISyntaxException, YarnException {
     Credentials cred = new Credentials();
     String fileLocation = System.getenv(UserGroupInformation.HADOOP_TOKEN_FILE_LOCATION);
-    LOG.info("=== HADOOP_TOKEN_FILE_LOCATION" + fileLocation);
     if (fileLocation != null) {
       cred = Credentials.readTokenStorageFile(new File(fileLocation), conf);
     } else {
@@ -355,7 +349,6 @@ public class Utils {
   public static void localizeHDFSResource(FileSystem fs, String hdfsSrcPath, String dstName, LocalResourceType resourceType,
       Map<String, LocalResource> localResources) throws IOException {
     Path src = new Path(hdfsSrcPath);
-    LOG.info("=== localizeHDFSResource. localizing from hdfs  " + hdfsSrcPath + " to local  " + dstName);
     FileStatus scFileStatus = fs.getFileStatus(src);
     LocalResource scRsrc =
         LocalResource.newInstance(

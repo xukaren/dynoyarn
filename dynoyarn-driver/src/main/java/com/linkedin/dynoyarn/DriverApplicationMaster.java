@@ -114,7 +114,6 @@ public class DriverApplicationMaster {
   }
 
   public boolean init(String[] args) throws IOException {
-    LOG.info("=== Driver ApplicationMaster init()");
     Options opts = new Options();
     opts.addOption("conf", true, "Path to dynoyarn configuration.");
 
@@ -134,16 +133,12 @@ public class DriverApplicationMaster {
     requestMap = parseContainerRequests(dyarnConf);
     containerIdToComponentMap = new HashMap<>();
     totalNMs = dyarnConf.getInt(DynoYARNConfigurationKeys.NUM_NMS, 1);
-    LOG.info("=== totalNMS: " + totalNMs); 
     nodeManagersPerContainer = dyarnConf.getInt(DynoYARNConfigurationKeys.NMS_PER_CONTAINER, 1);
-    LOG.info("=== nodeManagersPerContainer: " + nodeManagersPerContainer); 
     numTotalNodeManagerContainers = Utils.getNumNMContainerRequests(dyarnConf);
-    LOG.info("=== numTotalNodeManagerContainers: " + numTotalNodeManagerContainers); 
     assignedLeftovers = (totalNMs % nodeManagersPerContainer == 0);
     fs = FileSystem.get(dyarnConf);
     appResourcesPath = Utils.constructAppResourcesPath(fs, Utils.getApplicationId().toString());
     hdfsStoragePath = new Path(appResourcesPath, Constants.HDFS_STORAGE_FILE);
-    LOG.info("=== hdfsStoragePath" + hdfsStoragePath);
     return true;
   }
 
@@ -163,14 +158,10 @@ public class DriverApplicationMaster {
 
     // Init AMRMClient
     AMRMClientAsync.AbstractCallbackHandler allocListener = new RMCallbackHandler();
-    LOG.info("=== created RMCallbackHandler");
 
     amRMClient = AMRMClientAsync.createAMRMClientAsync(1000, allocListener);
-    LOG.info("=== created AMRMClientAsync"); 
     amRMClient.init(dyarnConf);
-    LOG.info("=== init'ed amRMClient");
     amRMClient.start();
-    LOG.info("=== starteded amRMClient");
 
     try {
       String appMasterHostname = NetUtils.getHostname();
@@ -184,11 +175,9 @@ public class DriverApplicationMaster {
   }
 
   public static void main(String[] args) {
-    LOG.info("=== DriverAppmaster main()"); 
     boolean result = false;
     try {
       DriverApplicationMaster appMaster = new DriverApplicationMaster();
-      LOG.info("=== DriverAppmaster main() new appMaster"); 
 
       LOG.info("Initializing ApplicationMaster");
       boolean doRun = appMaster.init(args);
@@ -214,7 +203,6 @@ public class DriverApplicationMaster {
   }
 
   public boolean run() throws IOException, InterruptedException {
-    LOG.info("=== DriverAppMaster run()");
     containerResources = getContainerResources();
     scheduleTasks();
     new NodeLabelsUpdater().start();
@@ -231,7 +219,6 @@ public class DriverApplicationMaster {
     } catch (Exception ex) {
       LOG.error("Failed to unregister application", ex);
     }
-    LOG.info("=== about to stop nmClientAsync"); 
     nmClientAsync.stop();
     amRMClient.waitForServiceToStop(5000);
     amRMClient.stop();
@@ -247,7 +234,6 @@ public class DriverApplicationMaster {
     @VisibleForTesting
     void remoteAddLabels(ResourceManagerAdministrationProtocol rmAdminClient, Map<String, Integer> labelToCounts,
         List<NodeReport> nodeReports) throws IOException, YarnException {
-      LOG.info("=== remoteAddLabels "); 
       List<NodeLabel> labels = new ArrayList<>();
       labelToCounts.keySet().forEach(label -> labels.add(NodeLabel.newInstance(label)));
       AddToClusterNodeLabelsRequest addRequest = AddToClusterNodeLabelsRequest.newInstance(labels);
@@ -268,7 +254,6 @@ public class DriverApplicationMaster {
 
     @Override
     public void run() {
-      LOG.info("=== DriverAppMaster NodeLabelsUpdater run()");
 
       synchronized (DriverApplicationMaster.this) {
         try {
@@ -312,7 +297,6 @@ public class DriverApplicationMaster {
   }
 
   private Status monitor() {
-    LOG.info("=== DriverAppMaster monitor()");
 
     if (numCompletedNMContainers.get() == numTotalNodeManagerContainers) {
       if (numFailedNMContainers.get() == 0) {
@@ -332,7 +316,6 @@ public class DriverApplicationMaster {
   }
 
   public static Map<DriverComponent, ContainerRequest> parseContainerRequests(Configuration conf) {
-    LOG.info("=== DriverAppMaster parseContainerRequests()");
 
     Map<DriverComponent, ContainerRequest> containerRequests = new HashMap<>();
     String nmMemoryString = conf.get(DynoYARNConfigurationKeys.NM_MEMORY, "2g");
@@ -386,27 +369,22 @@ public class DriverApplicationMaster {
 
     @Override
     public void onContainerResourceIncreased(ContainerId containerId, Resource resource) { 
-      LOG.info("===onContainerResourceIncreased ");
     }
 
     @Override
     public void onContainerResourceUpdated(ContainerId containerId, Resource resource) {
-      LOG.info("===onContainerResourceUpdated ");
   }
 
     @Override
     public void onIncreaseContainerResourceError(ContainerId containerId, Throwable t) {
-      LOG.info("=== onIncreaseContainerResourceError");
     }
 
     @Override
     public void onUpdateContainerResourceError(ContainerId containerId, Throwable t) {
-      LOG.info("=== onUpdateContainerResourceError");
     }
   }
 
   private NMCallbackHandler createNMCallbackHandler() {
-    LOG.info("=== createNMCallbackHandler");
     return new NMCallbackHandler();
   }
 
@@ -442,7 +420,6 @@ public class DriverApplicationMaster {
 
     @Override
     public void onContainersAllocated(List<Container> containers) {
-      LOG.info("==== RMCallbackHandler onContainersAllocated");
       /*
        * How is cluster information propagated?
        * We first allocate the ResourceManager first and collect the address of the RM.
@@ -531,7 +508,6 @@ public class DriverApplicationMaster {
     DriverComponent component;
 
     ContainerLauncher(Container container, DriverComponent component) {
-      LOG.info("=== ContainerLauncher " + container.toString()); 
       this.container = container;
       this.component = component;
     }
@@ -540,7 +516,6 @@ public class DriverApplicationMaster {
      * Set up container's launch command and start the container.
      */
     public void run() {
-      LOG.info("=== ContainerLauncheer run() for : " + component.toString());
       // The command to run inside the container.
       List<String> commands = new ArrayList<>();
       StringJoiner arguments = new StringJoiner(" ");
@@ -560,7 +535,6 @@ public class DriverApplicationMaster {
       arguments.add("1>" + ApplicationConstants.LOG_DIR_EXPANSION_VAR + "/stdout");
       arguments.add("2>" + ApplicationConstants.LOG_DIR_EXPANSION_VAR + "/stderr");
       commands.add(arguments.toString());
-      LOG.info("=== run() arguments: " + arguments.toString()); 
       ByteBuffer tokens;
       tokens = allTokens.duplicate();
       // Set logs to be readable by everyone.
@@ -604,9 +578,7 @@ public class DriverApplicationMaster {
       }
       ContainerLaunchContext ctx = ContainerLaunchContext.newInstance(containerResources, containerShellEnv,
           commands, null, tokens, acls);
-      LOG.info("=== about to start nmClientAsync.startContainerAsync"); 
       nmClientAsync.startContainerAsync(container, ctx);
-      LOG.info("=== done nmClientAsync.startContainerAsync()"); 
 
     }
   }
@@ -636,7 +608,6 @@ public class DriverApplicationMaster {
    * Schedule tasks - RM container request and NM container requests.
    */
   private void scheduleTasks() throws InterruptedException {
-    LOG.info("=== scheduleTasks()"); 
     // Schedule ResourceManager first.
     ContainerRequest rmRequest = requestMap.get(DriverComponent.RESOURCE_MANAGER);
     LOG.info("Start to schedule Resource Manager..");
@@ -644,7 +615,6 @@ public class DriverApplicationMaster {
     long clusterDurationMs = dyarnConf.getLong(DynoYARNConfigurationKeys.DRIVER_DURATION_MS,
         DynoYARNConfigurationKeys.DEFAULT_DRIVER_DURATION_MS);
     synchronized (rmAllocationLock) {
-      LOG.info("=== clusterDurationMs " + clusterDurationMs); 
       rmAllocationLock.wait(clusterDurationMs);
     }
     LOG.info("Scheduled Resource Manager, moving to schedule node managers!");
@@ -669,9 +639,7 @@ public class DriverApplicationMaster {
     Utils.localizeHDFSResource(fs, containerExecutorCfg, Constants.CONTAINER_EXECUTOR_CFG, LocalResourceType.FILE, containerResources);
 
     String hdfsClasspath = System.getenv("HDFS_CLASSPATH");
-    LOG.info("=== HDFS_CLASSPATH " + hdfsClasspath);
     for (FileStatus status : fs.listStatus(new Path(hdfsClasspath))) {
-      LOG.info("=== getContainerResources " + status.toString());
       Utils.localizeHDFSResource(fs, status.getPath().toString(), status.getPath().getName(), LocalResourceType.FILE, containerResources);
     }
 

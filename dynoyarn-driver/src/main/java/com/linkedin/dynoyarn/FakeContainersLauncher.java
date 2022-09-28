@@ -59,7 +59,6 @@ public class FakeContainersLauncher extends ContainersLauncher {
 
     FakeContainer(long finishTime) {
       this(null, finishTime);
-      LOG.info("=== FakeContainer ctor. finishTime " + finishTime);
     }
 
     FakeContainer(ContainerId containerId, long finishTime) {
@@ -77,7 +76,6 @@ public class FakeContainersLauncher extends ContainersLauncher {
 
     @Override
     public int compareTo(FakeContainer other) {
-      LOG.info("=== FakeContainer compareTo this " + this.containerId + " other " + other.containerId); 
       // Maintain global ordering based on finishTime and containerId,
       // otherwise containers with the same finishTime will get lost in the TreeSet
       // (and the corresponding application will hang since this container never finishes)
@@ -116,7 +114,6 @@ public class FakeContainersLauncher extends ContainersLauncher {
   public void init(Context nmContext, Dispatcher nmDispatcher,
       ContainerExecutor containerExec, LocalDirsHandlerService nmDirsHandler,
       ContainerManagerImpl nmContainerManager) {
-    LOG.info("=== FakeContainersLauncher init()");
     super.init(nmContext, nmDispatcher, containerExec, nmDirsHandler,
         nmContainerManager);
     this.context = nmContext;
@@ -155,7 +152,6 @@ public class FakeContainersLauncher extends ContainersLauncher {
 
   @Override
   public void handle(ContainersLauncherEvent event) {
-    LOG.info("=== FakeContainersLauncher handle() " + event.getContainer().getContainerId());
     Container container = event.getContainer();
     ContainerId containerId = container.getContainerId();
     ContainerLaunchContext launchContext = container.getLaunchContext();
@@ -166,7 +162,6 @@ public class FakeContainersLauncher extends ContainersLauncher {
     }
     switch (event.getType()) {
       case LAUNCH_CONTAINER:
-        LOG.info("=== launching a container"); 
         long containerRuntime = Long.parseLong(launchContext.getEnvironment()
             .get(CONTAINER_RUNTIME_ENV));
         long finishTime = clock.getTime() + containerRuntime;
@@ -195,7 +190,6 @@ public class FakeContainersLauncher extends ContainersLauncher {
   class ContainerCompletionChecker implements Runnable {
     @Override
     public void run() {
-      LOG.info("=== FakeContainersLauncher ContainerCompletionChecker run()");
       try {
         synchronized (runningContainers) {
           long currentTime = clock.getTime();

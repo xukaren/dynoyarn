@@ -40,7 +40,6 @@ public class DynoYARNBasedProcessTree extends ResourceCalculatorProcessTree {
     // TODO need to report AM utilization too
     super(pid);
     this.pid = pid;
-    LOG.info("=== DynoYARNBasedProcessTree");
     this.startTime = System.currentTimeMillis();
     try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(pid), StandardCharsets.UTF_8))) {
       Utilization[] utils = new ObjectMapper().readValue(reader.readLine(), Utilization[].class);
@@ -54,7 +53,6 @@ public class DynoYARNBasedProcessTree extends ResourceCalculatorProcessTree {
 
   @Override
   public void updateProcessTree() {
-    LOG.info("=== DynoYARNBasedProcessTree updateProcessTree");
 
     long currentTime = System.currentTimeMillis();
     Utilization ret = new Utilization(currentTime - startTime, 0, 0, 0);
@@ -67,7 +65,6 @@ public class DynoYARNBasedProcessTree extends ResourceCalculatorProcessTree {
 
   @Override
   public long getVirtualMemorySize() {
-    LOG.info("=== DynoYARNBasedProcessTree getVirtualMemorySize");
     // TODO: support reporting virtual memory
     return currentUtil.getMemoryMB() * MB_TO_BYTES;
   }

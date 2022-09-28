@@ -163,7 +163,6 @@ public class WorkloadClient implements AutoCloseable {
     String driverAppId = cliParser.getOptionValue(DRIVER_APP_ID_ARG);
     workloadSpecLocation = cliParser.getOptionValue(WORKLOAD_SPEC_LOCATION_ARG);
     simulatedFatJarLocation = cliParser.getOptionValue(SIMULATED_FATJAR_ARG);
-    LOG.info("=== simulatedFatJarLocation " + cliParser.getOptionValue(SIMULATED_FATJAR_ARG)); 
     confPath = cliParser.getOptionValue(CONF_ARG);
     if (confPath != null) {
       conf.addResource(new Path(confPath));
@@ -213,13 +212,11 @@ public class WorkloadClient implements AutoCloseable {
     });
     if (simulatedFatJarLocation != null) {
       // fat jar is on HDFS
-      LOG.info("=== simulatedFatJarLocation is on HDFS " + simulatedFatJarLocation.toString());
       containerEnv.put(Constants.SIMULATED_FATJAR_NAME, simulatedFatJarLocation.toString());
     } else if (files.length == 1) {
       Path simulatedFatJarLocation = Utils.localizeLocalResource(conf, fs, files[0].getPath(),
           LocalResourceType.FILE, appResourcesPath, localResources);
       containerEnv.put(Constants.SIMULATED_FATJAR_NAME, simulatedFatJarLocation.toString());
-      LOG.info("=== simulatedFatJarLocation is not on HDFS " +  simulatedFatJarLocation.toString());
     } else {
       throw new IllegalArgumentException("Couldn't find dynoyarn-generator* fat jar");
     }
@@ -237,7 +234,6 @@ public class WorkloadClient implements AutoCloseable {
         Utils.localizeLocalResource(conf, fs, status.getPath().toString(), LocalResourceType.FILE, hdfsClasspath,
             localResources);
       }
-      LOG.info("=== putting HDFS_CLASSPATH into containerEnv " + hdfsClasspath.toString());
       containerEnv.put("HDFS_CLASSPATH", hdfsClasspath.toString());
     }
 

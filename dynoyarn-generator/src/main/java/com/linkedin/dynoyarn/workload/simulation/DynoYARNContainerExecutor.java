@@ -36,7 +36,6 @@ public class DynoYARNContainerExecutor extends DefaultContainerExecutor {
 
   @Override
   public int launchContainer(ContainerStartContext ctx) throws IOException, ConfigurationException {
-    LOG.info("=== DynoYARNContainerExecutor launchContainer()");
     Container container = ctx.getContainer();
     Map<String, String> containerEnv = container.getLaunchContext().getEnvironment();
     ContainerId cId = container.getContainerId();
@@ -61,7 +60,6 @@ public class DynoYARNContainerExecutor extends DefaultContainerExecutor {
 
   @Override
   public String getProcessId(ContainerId containerId) {
-    LOG.info("=== getProcessId launchContainer()");
 
     if (!cIdToExecutor.containsKey(containerId) || cIdToExecutor.get(containerId)) {
       return super.getProcessId(containerId);
@@ -71,7 +69,6 @@ public class DynoYARNContainerExecutor extends DefaultContainerExecutor {
 
   @Override
   public boolean signalContainer(ContainerSignalContext ctx) throws IOException {
-    LOG.info("=== getProcessId signalContainer()");
 
     //TODO: terminate early if signal sent
     return true;
@@ -84,7 +81,6 @@ public class DynoYARNContainerExecutor extends DefaultContainerExecutor {
 
   @Override
   public boolean isContainerAlive(ContainerLivenessContext ctx) throws IOException {
-    LOG.info("=== getProcessId isContainerAlive()");
 
     return false;
   }
