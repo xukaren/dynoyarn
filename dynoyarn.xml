@@ -3,26 +3,36 @@
   <property>
     <name>dynoyarn.resourcemanager.memory</name>
     <value>16g</value>
+    <!-- TODO not sure what this affects -->
     <description>Memory size of simulated resource manager container.</description>
   </property>
   <property>
     <name>dynoyarn.nodemanager.instances-per-container</name>
-    <value>30</value>
+    <value>1000</value>
+    <!-- TODO test this isn't too high and doesn't break Dynoyarn -->
     <description>Number of node managers per container.</description>
   </property>
   <property>
+    <!-- TODO not sure why this config is used instead of yarn.scheduler.minimum-allocation-mb and yarn.scheduler.maximum-allocation-mb -->
     <name>dynoyarn.nodemanager.memory</name>
-    <value>10g</value>
+    <value>16g</value>
+    <!-- copper uses 16384 as yarn.scheduler.maximum-allocation-mb  -->
+    <!-- Each container that the simulated NM allocates to a workload app can only give out this much memory -->
     <description>Memory size of simulated node manager containers.</description>
   </property>
   <property>
+    <!-- TODO not sure why this config is used instead of yarn.scheduler.minimum-allocation-vcores and yarn.scheduler.maximum-allocation-vcores -->
     <name>dynoyarn.nodemanager.vcores</name>
-    <value>1</value>
+    <value>8</value> 
+    <!-- copper uses 8 as yarn.scheduler.maximum-allocation-vcores  -->
     <description>Number of vcores for the simulated node manager containers.</description>
+    <!-- each container that the simulated NM allocates to a workload app can only give out this many vcores. e.g. if workload app requests 4 vcores, and this is configured to 1, will need 4 containers of 1 vcore each. if this is set to 2, then the workload app only needs 2 containers, etc -->
   </property>
   <property>
     <name>dynoyarn.nodemanager.instances</name>
-    <value>30</value>
+    <value>100</value>
+    <!-- <value>10000</value> -->
+    <!-- Simulate 10k nodes in cluster.   -->
     <description>Number of node managers for the simulated cluster.</description>
   </property>
   <property>
@@ -50,6 +60,7 @@
     <name>dynoyarn.workload.am.memory</name>
     <value>8192</value>
     <description>Memory size of the workload application's AM, in MB.</description>
+    <!-- TODO not sure why this matters -->
   </property>
   <property>
     <name>dynoyarn.workload.app-submitter-exit-upon-submission</name>
@@ -71,7 +82,7 @@
   <property>
     <name>dynoyarn.app-submitter.memory</name>
     <value>10384</value>
-    <!--TODO belief is that the max is 16384 -->
+    <!--TODO check that max is 16384 -->
     <description>Memory size (in MB) of each workload container.</description>
   </property>
   <property>

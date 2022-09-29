@@ -175,12 +175,22 @@
     <value>10000</value>
   </property>
   <property>
+    <name>yarn.nodemanager.vmem-pmem-ratio</name>
+    <value>2.1</value>
+    <!-- 2.1 is the default. adding this here just make it clear-->
+  </property>
+  <property>
     <name>yarn.nodemanager.resource.cpu-vcores</name>
-    <value>70</value>
+    <value>84</value>
+    <!-- b20b is 84 -->
+    <!-- 84*30 fake NMs = 2520 total vCores -->
   </property>
   <property>
     <name>yarn.nodemanager.resource.memory-mb</name>
-    <value>249856</value>
+    <value>369664</value>
+    <!-- B20B has 369664 MB  -->
+    <!-- 369664 * 30 fake NMs ≈ 11.09TB -->
+    <!--  set this for fake NM -->
   </property>
   <property>
     <name>yarn.nodemanager.container-manager.thread-count</name>
@@ -193,6 +203,7 @@
   <property>
     <name>yarn.minicluster.yarn.nodemanager.resource.memory-mb</name>
     <value>249856</value>
+    <!-- ??? where is this used -->
   </property>
   <property>
     <name>yarn.minicluster.use-rpc</name>
