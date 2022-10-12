@@ -116,7 +116,7 @@ public class SimulatedApplicationMaster {
     conf.addResource(System.getenv(Constants.DYARN_CONF_NAME));
     UserGroupInformation.setConfiguration(conf);
     fs = FileSystem.get(conf);
-    String clusterSpecLocation = cliParser.getOptionValue("cluster_spec_location");
+    // String clusterSpecLocation = cliParser.getOptionValue("cluster_spec_location");
     // InputStream inputStream = fs.open(new Path(clusterSpecLocation));
     // String out = IOUtils.toString(inputStream);
     // ClusterInfo cluster = new ObjectMapper().readValue(out, ClusterInfo.class);
@@ -124,8 +124,22 @@ public class SimulatedApplicationMaster {
     // amEndpoint = cluster.getRmHost() + ":" + cluster.getRmSchedulerPort();
 
     // TODO hardcoded due to fs.open() trying to access local FS instead of HDFS
-    rmEndpoint = "phx5-8yv.prod.uber.internal:8032";
-    amEndpoint = "phx5-8yv.prod.uber.internal:8030";
+
+    // Bronze
+    // rmEndpoint = "phx3-xip.prod.uber.internal:8032";
+    // amEndpoint = "phx3-xip.prod.uber.internal:8030";
+
+    // Gamma 1T baremetal 
+    // rmEndpoint = "hadoopgammarm01-dca8.prod.uber.internal:8032"; 
+    // amEndpoint = "hadoopgammarm01-dca8.prod.uber.internal:8030";
+    
+    // gamma b20b containerized RM 
+    // rmEndpoint = "dca18-5k2.prod.uber.internal:8032"; 
+    // amEndpoint = "dca18-5k2.prod.uber.internal:8030";
+
+    // Perf-test 
+    // rmEndpoint = "phx5-8yv.prod.uber.internal:8032";
+    // amEndpoint = "phx5-8yv.prod.uber.internal:8030";
     conf.set(YarnConfiguration.RM_ADDRESS, rmEndpoint);
     conf.set(YarnConfiguration.RM_SCHEDULER_ADDRESS, amEndpoint);
     // Set NM/RM max-wait to respective intervals, so that the underlying ipc.Client only retries once.
@@ -418,7 +432,7 @@ public class SimulatedApplicationMaster {
       arguments.add("1>" + ApplicationConstants.LOG_DIR_EXPANSION_VAR + "/stdout");
       arguments.add("2>" + ApplicationConstants.LOG_DIR_EXPANSION_VAR + "/stderr");
       commands.add(arguments.toString());
-
+      LOG.info("=== ContainerLauncher command: " + arguments.toString());
       ByteBuffer tokens;
       tokens = containerTokens.duplicate();
       // Set logs to be readable by everyone.

@@ -8,14 +8,14 @@
   </property>
   <property>
     <name>dynoyarn.nodemanager.instances-per-container</name>
-    <value>1000</value>
+    <value>100</value>
     <!-- TODO test this isn't too high and doesn't break Dynoyarn -->
     <description>Number of node managers per container.</description>
   </property>
   <property>
     <!-- TODO not sure why this config is used instead of yarn.scheduler.minimum-allocation-mb and yarn.scheduler.maximum-allocation-mb -->
     <name>dynoyarn.nodemanager.memory</name>
-    <value>16g</value>
+    <value>16384m</value>
     <!-- copper uses 16384 as yarn.scheduler.maximum-allocation-mb  -->
     <!-- Each container that the simulated NM allocates to a workload app can only give out this much memory -->
     <description>Memory size of simulated node manager containers.</description>
@@ -30,7 +30,7 @@
   </property>
   <property>
     <name>dynoyarn.nodemanager.instances</name>
-    <value>100</value>
+    <value>10000</value>
     <!-- <value>10000</value> -->
     <!-- Simulate 10k nodes in cluster.   -->
     <description>Number of node managers for the simulated cluster.</description>
@@ -50,7 +50,7 @@
   </property>
   <property>
     <name>dynoyarn.workload.start-time</name>
-    <value>1607151674543</value>
+    <value>1663564049597</value>
     <description>Epoch to start the trace replay from. For example, if the trace contains
     app_1 with submit time 1000, app_2 with submit time 2000, and app_3 with submit time 3000, and this
     config is set to 2000, the simulation will start by submitting app_2 (then app_3 a second later).
