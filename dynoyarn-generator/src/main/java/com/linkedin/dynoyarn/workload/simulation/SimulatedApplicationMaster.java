@@ -125,13 +125,17 @@ public class SimulatedApplicationMaster {
 
     // TODO hardcoded due to fs.open() trying to access local FS instead of HDFS
 
-    // Bronze
-    // rmEndpoint = "phx3-xip.prod.uber.internal:8032";
-    // amEndpoint = "phx3-xip.prod.uber.internal:8030";
+    // Bronze 1T
+    rmEndpoint = "phx3-xip.prod.uber.internal:8032";
+    amEndpoint = "phx3-xip.prod.uber.internal:8030";
+
+    // Bronze B20B
+    // rmEndpoint = "phx5-69a.prod.uber.internal:8032";
+    // amEndpoint = "phx5-69a.prod.uber.internal:8030";
 
     // Gamma 1T baremetal 
-    rmEndpoint = "hadoopgammarm01-dca8.prod.uber.internal:8032"; 
-    amEndpoint = "hadoopgammarm01-dca8.prod.uber.internal:8030";
+    // rmEndpoint = "hadoopgammarm01-dca8.prod.uber.internal:8032"; 
+    // amEndpoint = "hadoopgammarm01-dca8.prod.uber.internal:8030";
     
     // gamma b20b containerized RM 
     // rmEndpoint = "dca18-5k2.prod.uber.internal:8032"; 
