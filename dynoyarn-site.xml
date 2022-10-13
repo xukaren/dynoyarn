@@ -244,4 +244,8 @@
     <name>yarn.application.classpath</name>
     <value>$HADOOP_CLIENT_CONF_DIR,$HADOOP_CONF_DIR,/opt/s3a/lib/*,/opt/hadoop/yarn_latest/share/hadoop/common/*,/opt/hadoop/yarn_latest/share/hadoop/common/lib/*,/opt/hadoop/yarn_latest/share/hadoop/hdfs/*,/opt/hadoop/yarn_latest/share/hadoop/hdfs/lib/*,/opt/hadoop/yarn_latest/share/hadoop/yarn/*,/opt/hadoop/yarn_latest/share/hadoop/yarn/lib/*</value>
   </property> -->
+  <property>
+    <name>yarn.scheduler.maximum-allocation-vcores</name>
+    <value>8</value>
+  </property>
 </configuration>

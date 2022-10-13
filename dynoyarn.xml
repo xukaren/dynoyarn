@@ -15,7 +15,7 @@
   <property>
     <!-- TODO not sure why this config is used instead of yarn.scheduler.minimum-allocation-mb and yarn.scheduler.maximum-allocation-mb -->
     <name>dynoyarn.nodemanager.memory</name>
-    <value>16384m</value>
+    <value>120g</value>
     <!-- copper uses 16384 as yarn.scheduler.maximum-allocation-mb  -->
     <!-- Each container that the simulated NM allocates to a workload app can only give out this much memory -->
     <description>Memory size of simulated node manager containers.</description>
@@ -30,7 +30,7 @@
   </property>
   <property>
     <name>dynoyarn.nodemanager.instances</name>
-    <value>7500</value>
+    <value>10000</value>
     <!-- <value>10000</value> -->
     <!-- Simulate 10k nodes in cluster.   -->
     <description>Number of node managers for the simulated cluster.</description>
