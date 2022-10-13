@@ -248,4 +248,9 @@
     <name>yarn.scheduler.maximum-allocation-vcores</name>
     <value>8</value>
   </property>
+  <property>
+    <!-- to match yarn-site.xml -->
+    <name>yarn.scheduler.maximum-allocation-mb</name>
+    <value>163840</value>
+  </property>
 </configuration>
