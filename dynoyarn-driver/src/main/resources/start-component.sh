@@ -83,11 +83,9 @@ export HADOOP_PID_DIR=${pidDir}
 export HADOOP_CLASSPATH="$extraClasspathDir/*"
 export JMX_OPTS="-Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.port=20004"
 
-# TODO add heap dump path and GC log
-# export YARN_RESOURCEMANAGER_OPTS="-Xmx256g -Xms256g -verbose:gc -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=${YARN_LOG_DIR} -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+UseGCLogFileRotation -XX:NumberOfGCLogFiles=5 -XX:GCLogFileSize=100M -Xloggc:${YARN_LOG_DIR}/gc-rm.log-$(date +'%Y%m%d%H%M') -XX:+UseParNewGC -XX:+UseConcMarkSweepGC -XX:-CMSConcurrentMTEnabled -XX:CMSInitiatingOccupancyFraction=60 -XX:+CMSParallelRemarkEnabled "
-
-
-export YARN_OPTS="-Xmx300g -Xms300g  -XX:+HeapDumpOnOutOfMemoryError -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+UseGCLogFileRotation -XX:NumberOfGCLogFiles=5 -XX:GCLogFileSize=100M -XX:+UseParNewGC -XX:+UseConcMarkSweepGC -XX:-CMSConcurrentMTEnabled -XX:CMSInitiatingOccupancyFraction=50 -XX:+CMSParallelRemarkEnabled -Djava.io.tmpdir=$tmpdir $JMX_OPTS"
+# vary -XX:CMSInitiatingOccupancyFraction
+# vary -Xmx300g -Xms300g 
+export YARN_OPTS="-Xmx300g -Xms300g -verbose:gc -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=${YARN_LOG_DIR} -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+UseGCLogFileRotation -XX:NumberOfGCLogFiles=5 -XX:GCLogFileSize=100M -Xloggc:${YARN_LOG_DIR}/gc-rm.log-$(date +'%Y%m%d%H%M') -XX:+UseParNewGC -XX:+UseConcMarkSweepGC -XX:-CMSConcurrentMTEnabled -XX:CMSInitiatingOccupancyFraction=50 -XX:+CMSParallelRemarkEnabled -Djava.io.tmpdir=$tmpdir $JMX_OPTS"
 
 
 export HADOOP_CLIENT_OPTS="$HADOOP_CLIENT_OPTS $JAVA_HEAP_MAX -XX:ParallelGCThreads=2 -XX:CICompilerCount=2"
