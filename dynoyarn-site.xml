@@ -240,6 +240,18 @@
     <name>hadoop.proxyuser.piper.users</name>
     <value>*</value>
   </property>
+  <property>
+    <name>hadoop.proxyuser.spark.hosts</name>
+    <value>*</value>
+  </property>
+  <property>
+    <name>hadoop.proxyuser.spark.groups</name>
+    <value>*</value>
+  </property> 
+  <property>
+    <name>hadoop.proxyuser.spark.users</name>
+    <value>*</value>
+  </property>
   <!-- <property>
     <name>yarn.application.classpath</name>
     <value>$HADOOP_CLIENT_CONF_DIR,$HADOOP_CONF_DIR,/opt/s3a/lib/*,/opt/hadoop/yarn_latest/share/hadoop/common/*,/opt/hadoop/yarn_latest/share/hadoop/common/lib/*,/opt/hadoop/yarn_latest/share/hadoop/hdfs/*,/opt/hadoop/yarn_latest/share/hadoop/hdfs/lib/*,/opt/hadoop/yarn_latest/share/hadoop/yarn/*,/opt/hadoop/yarn_latest/share/hadoop/yarn/lib/*</value>

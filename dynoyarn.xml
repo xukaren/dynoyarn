@@ -8,7 +8,7 @@
   </property>
   <property>
     <name>dynoyarn.nodemanager.instances-per-container</name>
-    <value>100</value>
+    <value>50</value>
     <!-- TODO test this isn't too high and doesn't break Dynoyarn -->
     <description>Number of node managers per container.</description>
   </property>
@@ -30,7 +30,7 @@
   </property>
   <property>
     <name>dynoyarn.nodemanager.instances</name>
-    <value>7500</value>
+    <value>4500</value>
     <!-- <value>10000</value> -->
     <!-- Simulate 10k nodes in cluster.   -->
     <description>Number of node managers for the simulated cluster.</description>
@@ -112,8 +112,8 @@
   </property>
   <property>
     <name>dynoyarn.driver.simulation-duration-ms</name>
-    <value>720000000</value> 
-    <!-- 8.3 days -->
+    <value>86400000</value> 
+    <!-- 1 day -->
     <description>Time, in ms, of how long the simulation should run before terminating.</description>
   </property>
   <property>
@@ -123,7 +123,7 @@
   </property>
   <property>
     <name>dynoyarn.workload.multiplier</name>
-    <value>1</value>
+    <value>1.75</value>
     <description>
       Multiplier for scaling up a workload to stress test the resource manager.
       For example, setting this to 1.5 will submit each application in the trace once, plus a
