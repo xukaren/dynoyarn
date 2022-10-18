@@ -30,7 +30,7 @@
   </property>
   <property>
     <name>dynoyarn.nodemanager.instances</name>
-    <value>10000</value>
+    <value>7500</value>
     <!-- <value>10000</value> -->
     <!-- Simulate 10k nodes in cluster.   -->
     <description>Number of node managers for the simulated cluster.</description>
@@ -112,8 +112,8 @@
   </property>
   <property>
     <name>dynoyarn.driver.simulation-duration-ms</name>
-    <value>7200000</value> 
-    <!-- 2 hours -->
+    <value>720000000</value> 
+    <!-- 8.3 days -->
     <description>Time, in ms, of how long the simulation should run before terminating.</description>
   </property>
   <property>
