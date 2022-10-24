@@ -2,7 +2,7 @@
 <configuration>
   <property>
     <name>dynoyarn.resourcemanager.memory</name>
-    <value>16g</value>
+    <value>120g</value>
     <!-- TODO not sure what this affects -->
     <description>Memory size of simulated resource manager container.</description>
   </property>
@@ -30,7 +30,7 @@
   </property>
   <property>
     <name>dynoyarn.nodemanager.instances</name>
-    <value>4500</value>
+    <value>7500</value>
     <!-- <value>10000</value> -->
     <!-- Simulate 10k nodes in cluster.   -->
     <description>Number of node managers for the simulated cluster.</description>
@@ -72,7 +72,7 @@
   </property> -->
   <property>
     <name>dynoyarn.workload.apps-per-container</name>
-    <value>5</value>
+    <value>1000</value>
     <description>
       The number of apps submitted from each workload container. Each submitted application
       spawns a separate thread. Therefore, use this config to tune the number of threads per
@@ -81,7 +81,7 @@
   </property>
   <property>
     <name>dynoyarn.app-submitter.memory</name>
-    <value>10384</value>
+    <value>120g</value>
     <!--TODO check that max is 16384 -->
     <description>Memory size (in MB) of each workload container.</description>
   </property>
@@ -123,7 +123,7 @@
   </property>
   <property>
     <name>dynoyarn.workload.multiplier</name>
-    <value>1.75</value>
+    <value>50</value>
     <description>
       Multiplier for scaling up a workload to stress test the resource manager.
       For example, setting this to 1.5 will submit each application in the trace once, plus a
