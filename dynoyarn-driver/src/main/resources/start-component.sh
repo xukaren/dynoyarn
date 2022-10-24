@@ -55,6 +55,7 @@ function hdfs_original {
   HADOOP_HOME=${hadoopHomeOriginal} HADOOP_CONF_DIR=${hadoopConfOriginal} \
   HADOOP_HDFS_HOME=${hadoopHomeOriginal} HADOOP_COMMON_HOME=${hadoopHomeOriginal} \
   ${hadoopHomeOriginal}/bin/hdfs "$@"
+  # TODO this might need to be fixed to upload RM info file 
 }
 
 extraClasspathDir="`pwd`/additionalClasspath/"
@@ -83,10 +84,7 @@ export HADOOP_PID_DIR=${pidDir}
 export HADOOP_CLASSPATH="$extraClasspathDir/*"
 export JMX_OPTS="-Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.port=20004"
 
-# vary -XX:CMSInitiatingOccupancyFraction
-# vary -Xmx300g -Xms300g 
-export YARN_OPTS="-Xmx300g -Xms300g -verbose:gc -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=${YARN_LOG_DIR} -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+UseGCLogFileRotation -XX:NumberOfGCLogFiles=5 -XX:GCLogFileSize=100M -Xloggc:${YARN_LOG_DIR}/gc-rm.log-$(date +'%Y%m%d%H%M') -XX:+UseParNewGC -XX:+UseConcMarkSweepGC -XX:-CMSConcurrentMTEnabled -XX:CMSInitiatingOccupancyFraction=50 -XX:+CMSParallelRemarkEnabled -Djava.io.tmpdir=$tmpdir $JMX_OPTS"
-
+export YARN_OPTS="-Xmx260g -Xms260g -Xmn16g -verbose:gc -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=${YARN_LOG_DIR} -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+PrintSafepointStatistics -XX:PrintSafepointStatisticsCount=1 -XX:+PrintGCApplicationStoppedTime -XX:+PrintGCApplicationConcurrentTime -XX:+DisableExplicitGC -XX:+UseCondCardMark -XX:ParGCCardsPerStrideChunk=32768 -XX:+UnlockDiagnosticVMOptions -XX:+UseGCLogFileRotation -XX:NumberOfGCLogFiles=5 -XX:GCLogFileSize=100M -Xloggc:${YARN_LOG_DIR}/gc-rm.log-$(date +'%Y%m%d%H%M') -XX:+UseParNewGC -XX:+UseConcMarkSweepGC -XX:-CMSConcurrentMTEnabled -XX:CMSInitiatingOccupancyFraction=40 -XX:+UseCMSInitiatingOccupancyOnly -XX:+CMSParallelRemarkEnabled -Djava.io.tmpdir=$tmpdir $JMX_OPTS"
 
 export HADOOP_CLIENT_OPTS="$HADOOP_CLIENT_OPTS $JAVA_HEAP_MAX -XX:ParallelGCThreads=2 -XX:CICompilerCount=2"
 
