@@ -2,13 +2,13 @@
 <configuration>
   <property>
     <name>dynoyarn.resourcemanager.memory</name>
-    <value>120g</value>
+    <value>220g</value>
     <!-- TODO not sure what this affects -->
     <description>Memory size of simulated resource manager container.</description>
   </property>
   <property>
     <name>dynoyarn.nodemanager.instances-per-container</name>
-    <value>50</value>
+    <value>100</value>
     <!-- TODO test this isn't too high and doesn't break Dynoyarn -->
     <description>Number of node managers per container.</description>
   </property>
@@ -23,14 +23,14 @@
   <property>
     <!-- TODO not sure why this config is used instead of yarn.scheduler.minimum-allocation-vcores and yarn.scheduler.maximum-allocation-vcores -->
     <name>dynoyarn.nodemanager.vcores</name>
-    <value>8</value> 
+    <value>8</value>
     <!-- copper uses 8 as yarn.scheduler.maximum-allocation-vcores  -->
     <description>Number of vcores for the simulated node manager containers.</description>
     <!-- each container that the simulated NM allocates to a workload app can only give out this many vcores. e.g. if workload app requests 4 vcores, and this is configured to 1, will need 4 containers of 1 vcore each. if this is set to 2, then the workload app only needs 2 containers, etc -->
   </property>
   <property>
     <name>dynoyarn.nodemanager.instances</name>
-    <value>7500</value>
+    <value>10000</value>
     <!-- <value>10000</value> -->
     <!-- Simulate 10k nodes in cluster.   -->
     <description>Number of node managers for the simulated cluster.</description>
@@ -81,7 +81,7 @@
   </property>
   <property>
     <name>dynoyarn.app-submitter.memory</name>
-    <value>120g</value>
+    <value>122880</value>
     <!--TODO check that max is 16384 -->
     <description>Memory size (in MB) of each workload container.</description>
   </property>
@@ -112,7 +112,7 @@
   </property>
   <property>
     <name>dynoyarn.driver.simulation-duration-ms</name>
-    <value>86400000</value> 
+    <value>86400000</value>
     <!-- 1 day -->
     <description>Time, in ms, of how long the simulation should run before terminating.</description>
   </property>

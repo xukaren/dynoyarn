@@ -17,13 +17,13 @@
   </property>
   <property>
     <name>yarn.resourcemanager.rm.container-allocation.expiry-interval-ms</name>
-    <value>259200000</value>
-    <!-- 3 days -->
+    <value>777600000</value>
+    <!-- 9 days -->
  </property>
  <property>
   <name>yarn.resourcemanager.rm.container-allocation.expiry-interval-ms</name>
-  <value>259200000</value>
-    <!-- 3 days -->
+  <value>777600000</value>
+    <!-- 8 days -->
   </property>
   <!-- <property>
     <name>hadoop.security.authentication</name>
