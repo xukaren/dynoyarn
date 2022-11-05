@@ -2,12 +2,6 @@
   Copyright 2020 LinkedIn Corporation. All rights reserved. Licensed under the BSD-2 Clause license.
   See LICENSE in the project root for license information.
 -->
-
-<!-- I think the general rule is that: If it doesn't find the conf option here, it will check yarn-site.xml from the NM that the simulated RM is running on, and if it doesnt find the conf there either, it will use the default value (from yarn-default.xml).
-
-Would be best if yarn-site and dynoyarn-site matched as closely as possible.
-
-Some things that explicitly have to be disabled are Yarn HA, and Yarn RM  recovery (?)  -->
 <configuration>
   <property>
     <name>hadoop.tmp.dir</name>
@@ -80,7 +74,6 @@ Some things that explicitly have to be disabled are Yarn HA, and Yarn RM  recove
     <value>${rmHost}:${baseHttpPort}</value>
   </property>
   <property>
-    <!-- TODO what does this do? -->
     <name>yarn.resourcemanager.leveldb-state-store.path</name>
     <value>${baseDir}/rm-state-store</value>
   </property>
@@ -131,11 +124,6 @@ Some things that explicitly have to be disabled are Yarn HA, and Yarn RM  recove
     <value>false</value>
   </property>
   <property>
-    <name>yarn.resourcemanager.recovery.enabled</name>
-    <value>false</value>
-    <!-- TODO check whether adding this overwrites the yarn-site.xml and dont need to remove the ScorerService from hadoop binary  -->
-  </property>
-  <property>
     <name>yarn.nodemanager.recovery.dir</name>
     <value>${baseDir}/nm-state-store-${containerID}</value>
   </property>
@@ -157,11 +145,11 @@ Some things that explicitly have to be disabled are Yarn HA, and Yarn RM  recove
   </property>
 -->
   <property>
-    <value>org.apache.hadoop.yarn.server.nodemanager.DefaultContainerExecutor</value>
+    <value>org.apache.hadoop.yarn.server.nodemanager.LinuxContainerExecutor</value>
   </property>
   <property>
     <name>yarn.nodemanager.linux-container-executor.group</name>
-    <value>yarn</value>
+    <value>udocker</value>
   </property>
   <property>
     <name>yarn.resourcemanager.principal</name>
@@ -173,16 +161,12 @@ Some things that explicitly have to be disabled are Yarn HA, and Yarn RM  recove
   </property>
   <property>
     <name>yarn.resourcemanager.keytab</name>
-    <value>/opt/hadoop/keytabs/${user.name}.keytab</value>
+    <value>/secrets/keytab/yarn.keytab</value>
   </property>
   <property>
     <name>yarn.nodemanager.keytab</name>
-    <value>/opt/hadoop/keytabs/${user.name}.keytab</value>
+    <value>/secrets/keytab/yarn.keytab</value>
  </property>
- <property>
-  <name>yarn.nodemanager.container-monitor.enabled</name>
-  <value>false</value>
-</property>
   <property>
     <name>yarn.nodemanager.container-monitor.process-tree.class</name>
     <value>com.linkedin.dynoyarn.workload.simulation.DynoYARNBasedProcessTree</value>
@@ -207,7 +191,6 @@ Some things that explicitly have to be disabled are Yarn HA, and Yarn RM  recove
   <property>
     <name>yarn.nodemanager.resource.cpu-vcores</name>
     <value>38</value>
-    <!-- 1T is 32 -->
     <!-- Copper has ~38 -->
     <!-- b20b is 84 -->
     <!-- 84*1000 fake NMs = 84000 total vCores -->
@@ -215,7 +198,6 @@ Some things that explicitly have to be disabled are Yarn HA, and Yarn RM  recove
   <property>
     <name>yarn.nodemanager.resource.memory-mb</name>
     <value>369664</value>
-    <!-- 1T is  246784 -->
     <!-- B20B has 369664 MB  -->
   <!-- 369664 * 1000 fake NMs ≈ 369TB -->
     <!--  set this for fake NM -->

@@ -55,7 +55,7 @@ function hdfs_original {
   HADOOP_HOME=${hadoopHomeOriginal} HADOOP_CONF_DIR=${hadoopConfOriginal} \
   HADOOP_HDFS_HOME=${hadoopHomeOriginal} HADOOP_COMMON_HOME=${hadoopHomeOriginal} \
   ${hadoopHomeOriginal}/bin/hdfs "$@"
-  # TODO this might need to be fixed to upload RM info file 
+  # TODO this might need to be fixed to upload RM info file
 }
 
 extraClasspathDir="`pwd`/additionalClasspath/"
@@ -83,8 +83,14 @@ export YARN_LOG_DIR=${logDir}
 export HADOOP_PID_DIR=${pidDir}
 export HADOOP_CLASSPATH="$extraClasspathDir/*"
 export JMX_OPTS="-Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.port=20004"
-export RM_OPTs="-Xmx220g -Xms220g -Xmn16g -verbose:gc -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=${YARN_LOG_DIR} -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+PrintSafepointStatistics -XX:PrintSafepointStatisticsCount=1 -XX:+PrintGCApplicationStoppedTime -XX:+UnlockDiagnosticVMOptions -XX:+LogVMOutput -XX:LogFile=${HADOOP_LOG_DIR}/jvm-rm.log-$(date +'%Y%m%d%H%M') -XX:+PrintGCApplicationConcurrentTime -XX:+DisableExplicitGC -XX:+UseCondCardMark -XX:ParGCCardsPerStrideChunk=32768 -XX:+UseGCLogFileRotation -XX:NumberOfGCLogFiles=5 -XX:GCLogFileSize=100M -Xloggc:${YARN_LOG_DIR}/gc-rm.log-$(date +'%Y%m%d%H%M') -XX:+UseParNewGC -XX:+UseConcMarkSweepGC -XX:+CMSConcurrentMTEnabled -XX:CMSInitiatingOccupancyFraction=40 -XX:+UseCMSInitiatingOccupancyOnly -XX:+CMSParallelRemarkEnabled"
-export YARN_OPTS="$RM_OPTs -Djava.io.tmpdir=$tmpdir $JMX_OPTS"
+
+export BAREMETAL_JMX_OPTS="-Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.port=20002"
+
+export 1T_RM_OPTs="-Xmx150g -Xms150g -Xmn2g -verbose:gc -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=${YARN_LOG_DIR} -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+PrintSafepointStatistics -XX:PrintSafepointStatisticsCount=1 -XX:+PrintGCApplicationStoppedTime -XX:+UnlockDiagnosticVMOptions -XX:+LogVMOutput -XX:LogFile=${HADOOP_LOG_DIR}/jvm-rm.log-$(date +'%Y%m%d%H%M') -XX:+PrintGCApplicationConcurrentTime -XX:+DisableExplicitGC -XX:+UseCondCardMark -XX:ParGCCardsPerStrideChunk=32768 -XX:+UseGCLogFileRotation -XX:NumberOfGCLogFiles=5 -XX:GCLogFileSize=100M -Xloggc:${YARN_LOG_DIR}/gc-rm.log-$(date +'%Y%m%d%H%M') -XX:+UseParNewGC -XX:+UseConcMarkSweepGC -XX:+CMSConcurrentMTEnabled -XX:CMSInitiatingOccupancyFraction=60 -XX:+UseCMSInitiatingOccupancyOnly -XX:+CMSParallelRemarkEnabled"
+
+export B20B_RM_OPTs="-Xmx220g -Xms220g -Xmn16g -verbose:gc -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=${YARN_LOG_DIR} -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+PrintSafepointStatistics -XX:PrintSafepointStatisticsCount=1 -XX:+PrintGCApplicationStoppedTime -XX:+UnlockDiagnosticVMOptions -XX:+LogVMOutput -XX:LogFile=${HADOOP_LOG_DIR}/jvm-rm.log-$(date +'%Y%m%d%H%M') -XX:+PrintGCApplicationConcurrentTime -XX:+DisableExplicitGC -XX:+UseCondCardMark -XX:ParGCCardsPerStrideChunk=32768 -XX:+UseGCLogFileRotation -XX:NumberOfGCLogFiles=5 -XX:GCLogFileSize=100M -Xloggc:${YARN_LOG_DIR}/gc-rm.log-$(date +'%Y%m%d%H%M') -XX:+UseParNewGC -XX:+UseConcMarkSweepGC -XX:+CMSConcurrentMTEnabled -XX:CMSInitiatingOccupancyFraction=40 -XX:+UseCMSInitiatingOccupancyOnly -XX:+CMSParallelRemarkEnabled"
+
+export YARN_OPTS="$B20B_RM_OPTs -Djava.io.tmpdir=$tmpdir $BAREMETAL_JMX_OPTS"
 
 export HADOOP_CLIENT_OPTS="$HADOOP_CLIENT_OPTS $JAVA_HEAP_MAX -XX:ParallelGCThreads=2 -XX:CICompilerCount=2"
 

@@ -30,7 +30,7 @@
   </property>
   <property>
     <name>dynoyarn.nodemanager.instances</name>
-    <value>10000</value>
+    <value>7500</value>
     <!-- <value>10000</value> -->
     <!-- Simulate 10k nodes in cluster.   -->
     <description>Number of node managers for the simulated cluster.</description>
@@ -45,7 +45,7 @@
   </property>
   <property>
     <name>dynoyarn.driver.node-label</name>
-    <value></value>
+    <value>dynonm</value>
     <description>Node label for simulated node manager containers.</description>
   </property>
   <property>
@@ -123,7 +123,7 @@
   </property>
   <property>
     <name>dynoyarn.workload.multiplier</name>
-    <value>50</value>
+    <value>5</value>
     <description>
       Multiplier for scaling up a workload to stress test the resource manager.
       For example, setting this to 1.5 will submit each application in the trace once, plus a

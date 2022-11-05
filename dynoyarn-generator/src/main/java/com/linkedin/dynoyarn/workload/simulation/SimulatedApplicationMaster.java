@@ -120,7 +120,7 @@ public class SimulatedApplicationMaster {
     // InputStream inputStream = fs.open(new Path(clusterSpecLocation));
     // String out = IOUtils.toString(inputStream);
     // ClusterInfo cluster = new ObjectMapper().readValue(out, ClusterInfo.class);
-    // rmEndpoint = cluster.getRmHost() + ":" + cluster.getRmPort(); 
+    // rmEndpoint = cluster.getRmHost() + ":" + cluster.getRmPort();
     // amEndpoint = cluster.getRmHost() + ":" + cluster.getRmSchedulerPort();
 
     // TODO hardcoded due to fs.open() trying to access local FS instead of HDFS
@@ -130,18 +130,22 @@ public class SimulatedApplicationMaster {
     // amEndpoint = "phx3-xip.prod.uber.internal:8030";
 
     // Bronze B20B
-    rmEndpoint = "phx5-69a.prod.uber.internal:8032";
-    amEndpoint = "phx5-69a.prod.uber.internal:8030";
+    // rmEndpoint = "phx5-69a.prod.uber.internal:8032";
+    // amEndpoint = "phx5-69a.prod.uber.internal:8030";
 
-    // Gamma 1T baremetal 
-    // rmEndpoint = "hadoopgammarm01-dca8.prod.uber.internal:8032"; 
-    // amEndpoint = "hadoopgammarm01-dca8.prod.uber.internal:8030";
-    
-    // gamma b20b containerized RM 
-    // rmEndpoint = "dca18-5k2.prod.uber.internal:8032"; 
+    // Gamma 1T baremetal
+    rmEndpoint = "hadoopgammarm01-dca8.prod.uber.internal:8032";
+    amEndpoint = "hadoopgammarm01-dca8.prod.uber.internal:8030";
+
+    // gamma b20b containerized RM
+    // rmEndpoint = "dca18-5k2.prod.uber.internal:8032";
     // amEndpoint = "dca18-5k2.prod.uber.internal:8030";
 
-    // Perf-test 
+    // gamma 1T containerized RM
+    // rmEndpoint = "dca8-5k4.prod.uber.internal:8032";
+    // amEndpoint = "dca8-5k4.prod.uber.internal:8030";
+
+    // Perf-test
     // rmEndpoint = "phx5-8yv.prod.uber.internal:8032";
     // amEndpoint = "phx5-8yv.prod.uber.internal:8030";
     conf.set(YarnConfiguration.RM_ADDRESS, rmEndpoint);
